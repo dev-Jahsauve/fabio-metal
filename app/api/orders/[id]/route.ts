@@ -1,0 +1,7 @@
+import { NextResponse } from "next/server";
+import { and, eq, desc } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { orders, orderItems, payments, shipments, invoices } from "@/lib/db/schema";
+import { requireUser } from "@/lib/auth";
+import { errorResponse } from "@/lib/api";
+export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) { try { const s = await requireUser(); const { id } = await params; const isAdmin = s.role === "admin"; const [order] = await db.select().from(orders).where(isAdmin ? eq(orders.id, id) : and(eq(orders.id, id), eq(orders.userId, s.userId))).limit(1); if (!order) return NextResponse.json({ error: "Commande introuvable" }, { status: 404 }); const items = await db.select().from(orderItems).where(eq(orderItems.orderId, order.id)); const [payment] = await db.select().from(payments).where(eq(payments.orderId, order.id)).limit(1); const [shipment] = await db.select().from(shipments).where(eq(shipments.orderId, order.id)).limit(1); const [invoice] = await db.select().from(invoices).where(eq(invoices.orderId, order.id)).limit(1); return NextResponse.json({ order, items, payment: payment ? { id: payment.id, status: payment.status, amountXaf: payment.amountXaf, currency: payment.currency, paymentUrl: payment.paymentUrl, createdAt: payment.createdAt, paidAt: payment.paidAt } : null, shipment: shipment || null, invoice: invoice || null }); } catch (e) { return errorResponse(e); } }

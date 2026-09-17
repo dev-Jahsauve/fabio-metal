@@ -1,0 +1,2 @@
+import {NextResponse} from 'next/server'; import {desc} from 'drizzle-orm'; import {db} from '@/lib/db'; import {auditLogs} from '@/lib/db/schema'; import {requireAdmin} from '@/lib/auth'; import {errorResponse} from '@/lib/api';
+export async function GET(){try{await requireAdmin();return NextResponse.json(await db.select().from(auditLogs).orderBy(desc(auditLogs.createdAt)).limit(200))}catch(e){return errorResponse(e)}}

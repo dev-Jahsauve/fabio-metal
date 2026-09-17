@@ -1,0 +1,2 @@
+import {NextResponse} from 'next/server'; import {desc} from 'drizzle-orm'; import {db} from '@/lib/db'; import {users} from '@/lib/db/schema'; import {requireAdmin} from '@/lib/auth'; import {errorResponse} from '@/lib/api';
+export async function GET(){try{await requireAdmin();const rows=await db.select({id:users.id,name:users.name,email:users.email,phone:users.phone,role:users.role,createdAt:users.createdAt,lastLoginAt:users.lastLoginAt}).from(users).orderBy(desc(users.createdAt));return NextResponse.json(rows)}catch(e){return errorResponse(e)}}

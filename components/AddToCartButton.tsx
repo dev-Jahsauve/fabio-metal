@@ -1,0 +1,4 @@
+"use client";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+export default function AddToCartButton({productId,stock=1}:{productId:string;stock?:number}){const [loading,setLoading]=useState(false);const [msg,setMsg]=useState("");const r=useRouter();async function add(){setLoading(true);setMsg("");const res=await fetch('/api/cart',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({productId,quantity:1})});const data=await res.json().catch(()=>({}));setLoading(false);if(res.status===401){r.push('/connexion?next=/panier');return}if(!res.ok){setMsg(data.error||'Impossible d’ajouter');return}setMsg('Ajouté au panier.');}return <div><button className="btn btn-gold" disabled={loading||stock<=0} onClick={add}>{stock<=0?'Rupture':loading?'Ajout...':'Ajouter au panier'}</button>{msg&&<small className="inline-msg">{msg}</small>}</div>}
