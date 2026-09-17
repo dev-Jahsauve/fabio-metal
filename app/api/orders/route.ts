@@ -18,9 +18,9 @@ const schema = z.object({
 }).superRefine((v, ctx) => { if (!v.addressId && !v.address) ctx.addIssue({ code: "custom", path: ["address"], message: "Adresse de livraison requise" }); });
 
 export async function POST(req: Request) {
+  let effectiveIdempotencyKey = "";
   try {
     const session = await requireUser();
-    let effectiveIdempotencyKey = "";
     const parsed = schema.safeParse(await req.json()); if (!parsed.success) return NextResponse.json({ error: "Panier ou adresse invalides" }, { status: 400 });
     const input = parsed.data;
     const rawIdempotencyKey = req.headers.get("Idempotency-Key")?.trim() || crypto.randomUUID();
@@ -58,8 +58,22 @@ export async function POST(req: Request) {
         if (!a) throw new Error("ADDRESS_NOT_FOUND");
         addressSnapshot = { recipientName: a.recipientName, phone: a.phone, addressLine: a.addressLine, city: a.city, region: a.region };
       } else if (input.address) {
-        addressSnapshot = input.address;
-        await tx.insert(addresses).values({ userId: session.userId, ...input.address, label: "Commande" });
+        addressSnapshot = {
+          recipientName: input.address.recipientName,
+          phone: input.address.phone,
+          addressLine: input.address.addressLine,
+          city: input.address.city,
+          region: input.address.region ?? null,
+        };
+        await tx.insert(addresses).values({
+          userId: session.userId,
+          recipientName: input.address.recipientName,
+          phone: input.address.phone,
+          addressLine: input.address.addressLine,
+          city: input.address.city,
+          region: input.address.region ?? null,
+          label: "Commande",
+        });
       }
 
       const [order] = await tx.insert(orders).values({ idempotencyKey, userId: session.userId, subtotalXaf: subtotal, deliveryFeeXaf: deliveryFee, discountXaf: 0, taxXaf: 0, currency: "XAF", totalXaf: total, customerNote: input.note, ...({ shippingRecipientName: addressSnapshot.recipientName, shippingPhone: addressSnapshot.phone, shippingAddressLine: addressSnapshot.addressLine, shippingCity: addressSnapshot.city, shippingRegion: addressSnapshot.region }) }).returning();
