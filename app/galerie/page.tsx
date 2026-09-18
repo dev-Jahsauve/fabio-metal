@@ -21,15 +21,29 @@ export default async function Galerie() {
         <div className="head">
           <span className="eyebrow">Galerie</span>
           <h1>
-            Réalisations & <span className="gradient">inspirations.</span>
+            Réalisations de <span className="gradient">l’atelier.</span>
           </h1>
-          <p>Le dashboard permettra de publier les photos réelles de FABIOLE METAL et de les classer par catégorie.</p>
+          <p>Photos réelles des ouvrages fabriqués et posés par FABIOLE METAL à Bojongo.</p>
         </div>
-        <div className="gallery">
-          {(gs.length ? gs.map((x) => x.imageUrl) : refs).map((u: string, i: number) => (
-            <img key={i} src={u} alt="Fabrication métallique" loading="lazy" />
-          ))}
-        </div>
+        {gs.length ? (
+          <div className="gallery">
+            {gs.map((x) => (
+              <figure key={x.id}>
+                <img src={x.imageUrl} alt={x.title} loading="lazy" />
+                <figcaption>
+                  {x.title}
+                  {x.category && <span>{x.category}</span>}
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        ) : (
+          <div className="gallery">
+            {refs.map((u: string, i: number) => (
+              <img key={i} src={u} alt="Fabrication métallique" loading="lazy" />
+            ))}
+          </div>
+        )}
       </div>
     </main>
   );

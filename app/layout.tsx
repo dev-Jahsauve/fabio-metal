@@ -9,6 +9,11 @@ export const metadata = {
     "Portails, portes, fenêtres, mobilier métallique et réalisations personnalisées.",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
+
 export default function RootLayout({
   children,
 }: {
@@ -19,22 +24,29 @@ export default function RootLayout({
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('fm-theme');if(t){document.documentElement.setAttribute('data-theme',t)}}catch(e){}})();`,
+            __html: `(function(){try{var t=localStorage.getItem('fm-theme');var ok=['sombre','clair','ocean'];if(ok.indexOf(t)===-1){t='sombre';try{localStorage.setItem('fm-theme',t)}catch(e){}}document.documentElement.setAttribute('data-theme',t)}catch(e){}})();`,
           }}
         />
       </head>
       <body>
-        <div className="topbar">Fabrication sur mesure à Bojongo — Portails, portes, mobilier — Devis rapide sur WhatsApp</div>
+        <div className="topbar">
+          <strong>Atelier Bojongo</strong>&nbsp;— Portails · Portes · Mobilier sur
+          mesure — Devis rapide sur WhatsApp
+        </div>
         <header className="nav">
           <div className="container navin">
-            <Link href="/" className="logo">
-              <span className="logo-mark">FM</span>
-              <span>FABIOLE METAL</span>
+            <Link href="/" className="logo" aria-label="FABIOLE METAL — Accueil">
+              <span className="logo-mark" aria-hidden="true">
+                FM
+              </span>
+              <span className="logo-text">
+                <span>FABIOLE METAL</span>
+                <small>Atelier · Bojongo</small>
+              </span>
             </Link>
 
-            <nav className="links">
+            <nav className="nav-links" aria-label="Navigation principale">
               <Link href="/">Accueil</Link>
-              <Link href="/a-propos">À propos</Link>
               <Link href="/services">Services</Link>
               <Link href="/boutique">Boutique</Link>
               <Link href="/galerie">Galerie</Link>
@@ -42,11 +54,26 @@ export default function RootLayout({
             </nav>
 
             <div className="nav-actions">
-              <Link href="/contact" className="btn btn-gold">
+              <Link
+                href="/contact"
+                className="btn btn-primary btn-sm nav-cta"
+              >
                 Demander un devis
               </Link>
-              <Link href="/compte" className="btn">Compte</Link>
-              <Link href="/panier" className="btn">Panier</Link>
+              <Link
+                href="/panier"
+                className="btn btn-icon"
+                aria-label="Voir le panier"
+                title="Panier"
+              >
+                <span aria-hidden="true">🛒</span>
+              </Link>
+              <Link
+                href="/compte"
+                className="btn btn-sm hide-mobile"
+              >
+                Compte
+              </Link>
               <ThemeSwitcher />
               <MobileNav />
             </div>
@@ -60,20 +87,27 @@ export default function RootLayout({
             <div>
               <Link href="/" className="logo" style={{ marginBottom: 12 }}>
                 <span className="logo-mark">FM</span>
-                <span>FABIOLE METAL</span>
+                <span className="logo-text">
+                  <span>FABIOLE METAL</span>
+                  <small>Atelier · Bojongo</small>
+                </span>
               </Link>
               <p>
                 Fabrication métallique sur mesure, soudure et mobilier en fer.
                 Portails, portes, fenêtres et réalisations personnalisées.
               </p>
               <div className="trust-bar">
-                <span className="trust-pill"><i />Sur mesure</span>
-                <span className="trust-pill blue"><i />Atelier local</span>
+                <span className="trust-pill">
+                  <i /> Sur mesure
+                </span>
+                <span className="trust-pill blue">
+                  <i /> Atelier local
+                </span>
               </div>
             </div>
 
             <div>
-              <b>FABIOLE METAL</b>
+              <b>Atelier</b>
               <p>
                 <Link href="/a-propos">À propos</Link>
                 <br />
@@ -84,7 +118,7 @@ export default function RootLayout({
             </div>
 
             <div>
-              <b>Navigation</b>
+              <b>Catalogue</b>
               <p>
                 <Link href="/services">Services</Link>
                 <br />
@@ -97,13 +131,17 @@ export default function RootLayout({
             </div>
 
             <div>
-              <b>Atelier</b>
+              <b>Contact</b>
               <p>
                 Face à la mairie de Bojongo
                 <br />
                 Tél / WhatsApp : +237 678 02 71 16
               </p>
-              <Link href="/contact" className="btn btn-gold" style={{ marginTop: 10 }}>
+              <Link
+                href="/contact"
+                className="btn btn-primary btn-sm"
+                style={{ marginTop: 10 }}
+              >
                 Demander un devis
               </Link>
             </div>

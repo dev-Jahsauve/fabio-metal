@@ -2,7 +2,7 @@ import Link from "next/link";
 import ServiceCarousel from "@/components/ServiceCarousel";
 import AddToCartButton from "@/components/AddToCartButton";
 import { db } from "@/lib/db";
-import { products, services, gallery } from "@/lib/db/schema";
+import { products, services, gallery, categories } from "@/lib/db/schema";
 import { eq, asc, desc } from "drizzle-orm";
 import { formatXaf, waLink } from "@/lib/utils";
 
@@ -52,7 +52,7 @@ export default async function Home() {
   let sv: any[] = [];
   try {
     [ps, gs, sv] = await Promise.all([
-      db.select().from(products).where(eq(products.published, true)).orderBy(desc(products.createdAt)).limit(6),
+      db.select({ p: products, categoryName: categories.name }).from(products).leftJoin(categories, eq(products.categoryId, categories.id)).where(eq(products.published, true)).orderBy(desc(products.createdAt)).limit(6),
       db.select().from(gallery).where(eq(gallery.published, true)).orderBy(desc(gallery.createdAt)).limit(4),
       db.select().from(services).where(eq(services.published, true)).orderBy(asc(services.sortOrder)).limit(8),
     ]);
@@ -150,10 +150,14 @@ export default async function Home() {
           </div>
           {ps.length ? (
             <div className="shop-grid">
-              {ps.map((p) => (
+              {ps.map(({ p, categoryName }) => (
                 <article className="product" key={p.id}>
                   {p.imageUrl && <img src={p.imageUrl} alt={p.name} loading="lazy" />}
                   <div className="product-body">
+                    <div className="product-top">
+                      {categoryName ? <span className="pill pill-cat">{categoryName}</span> : <span />}
+                      {p.stock <= 0 ? <span className="pill pill-out">Rupture</span> : p.stock <= 5 ? <span className="pill pill-low">Plus que {p.stock}</span> : <span className="pill pill-ok">En stock</span>}
+                    </div>
                     <h3>{p.name}</h3>
                     <p>{p.description}</p>
                     <div className="price">
