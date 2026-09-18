@@ -7,8 +7,8 @@ const TABS: Array<[string, string]> = [
   ["Services", "/services"],
   ["Boutique", "/boutique"],
   ["Galerie", "/galerie"],
-  ["Contact", "/contact"],
   ["À propos", "/a-propos"],
+  ["Contact", "/contact"],
 ];
 
 export default function MobileNav() {
@@ -47,7 +47,6 @@ export default function MobileNav() {
 
       {open && (
         <div className="menu-dropdown" role="menu" aria-label="Menu">
-          <p className="menu-label">Onglets</p>
           <nav className="menu-tabs" aria-label="Onglets de navigation">
             {TABS.map(([label, href]) => (
               <Link key={href} href={href} onClick={close}>
@@ -57,15 +56,19 @@ export default function MobileNav() {
             ))}
           </nav>
 
-          <p className="menu-label">Mon espace</p>
-          <div className="menu-account">
-            <Link href="/connexion" className="btn btn-primary menu-login" onClick={close}>
+          <div className="menu-cta">
+            <Link href="/contact" className="btn btn-primary menu-devis" onClick={close}>
+              Demander un devis
+            </Link>
+            <Link href="/connexion" className="btn menu-login" onClick={close}>
               <span aria-hidden="true">🔐</span> Se connecter
             </Link>
-            <span className="menu-sep">ou</span>
-            <Link href="/inscription" className="btn menu-register" onClick={close}>
-              Créer un compte <span aria-hidden="true">→</span>
-            </Link>
+            <p className="menu-hint">
+              Pas de compte ?{" "}
+              <Link href="/inscription" onClick={close}>
+                Créer un compte
+              </Link>
+            </p>
             <div className="menu-row">
               <Link href="/compte" onClick={close}>
                 Mon compte

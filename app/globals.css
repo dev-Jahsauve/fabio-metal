@@ -915,14 +915,6 @@ h3 {
   z-index: 90;
   animation: slideIn 0.18s ease;
 }
-.menu-label {
-  font-size: 0.7rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--muted);
-  margin: 10px 8px 6px;
-}
 .menu-tabs {
   display: grid;
   gap: 2px;
@@ -939,43 +931,37 @@ h3 {
 .menu-tabs a:hover {
   background-color: var(--panel2);
 }
-.menu-account {
+.menu-cta {
   display: grid;
   gap: 8px;
-  padding: 2px;
+  padding: 12px 2px 2px;
+  margin-top: 10px;
+  border-top: 1px solid var(--line);
 }
-.menu-account .btn {
+.menu-cta .btn {
   width: 100%;
-}
-.menu-login {
   padding: 13px 14px;
   font-size: 0.95rem;
   border-radius: 12px;
+}
+.menu-devis {
   box-shadow: 0 6px 18px rgba(47, 125, 225, 0.35);
 }
-[data-theme="clair"] .menu-login {
+[data-theme="clair"] .menu-devis {
   box-shadow: 0 6px 18px rgba(19, 95, 189, 0.3);
 }
-.menu-register {
-  padding: 12px 14px;
-  border-radius: 12px;
+.menu-login {
+  background-color: var(--panel2);
 }
-.menu-sep {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.menu-hint {
+  text-align: center;
+  font-size: 0.84rem;
   color: var(--muted);
-  font-size: 0.7rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+  margin: 2px 0 0;
 }
-.menu-sep::before,
-.menu-sep::after {
-  content: "";
-  height: 1px;
-  background-color: var(--line);
-  flex: 1;
+.menu-hint a {
+  color: var(--accent);
+  font-weight: 700;
 }
 .menu-row {
   display: flex;
