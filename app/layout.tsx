@@ -135,7 +135,7 @@ export default function RootLayout({
               <p>
                 Face à la mairie de Bojongo
                 <br />
-                Tél / WhatsApp : +237 678 02 71 16
+                Tél / WhatsApp : +237 698 30 87 80
               </p>
               <Link
                 href="/contact"

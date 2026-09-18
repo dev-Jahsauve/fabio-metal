@@ -96,7 +96,7 @@ export default async function Home() {
               <i /> Sur mesure
             </span>
             <span className="trust-pill orange">
-              <i /> Bojongo · +237 678 02 71 16
+              <i /> Bojongo · +237 698 30 87 80
             </span>
           </div>
         </div>

@@ -73,7 +73,17 @@ try {
        'FM-FOY-003', 'Plateau / fond metallique renforce sur mesure',
        'plateau-rond-renforce',
        'Disque metallique renforce avec cadre, base de brasero, couvercle de cuve ou fond sur mesure selon vos dimensions.',
-       18000, NULL, '/produits/plateau-rond-renforce.jpg', 8, true, true)
+       18000, NULL, '/produits/plateau-rond-renforce.jpg', 8, true, true),
+      ((SELECT id FROM categories WHERE slug='fenetres-protections'),
+       'FM-FEN-001', 'Grille de fenetre fer forge a volutes',
+       'grille-fenetre-volutes',
+       'Grille de protection peinte avec volutes et rosaces, cadre renforce. Dimensions standard ou sur mesure, pose par l''atelier.',
+       28000, 24500, '/produits/grille-fenetre-volutes.jpg', 10, false, true),
+      ((SELECT id FROM categories WHERE slug='fenetres-protections'),
+       'FM-FEN-002', 'Grille de fenetre motif geometrique sur mesure',
+       'grille-fenetre-motif-geometrique',
+       'Grille a motif geometrique soudee en atelier, finition brute a peindre ou peinture au choix. Motif et dimensions personnalisables.',
+       22000, NULL, '/produits/grille-fenetre-motif.jpg', 8, true, true)
     ON CONFLICT (slug) DO UPDATE SET
       name = EXCLUDED.name,
       description = EXCLUDED.description,
@@ -97,7 +107,9 @@ try {
       ('Barbecue sur pieds','Foyer','/produits/barbecue-sur-pieds.jpg','Grill a charbon soude et peint a l''atelier.', true),
       ('Supports marmite','Foyer','/produits/support-marmite.jpg','Trepieds et supports de cuisson en fer rond.', true),
       ('Patere murale','Accessoires','/produits/patere-murale.jpg','Petite ferronnerie : crochet mural en fer.', true),
-      ('Plateau renforce sur mesure','Atelier','/produits/plateau-rond-renforce.jpg','Disque renforce : base, couvercle ou fond de cuve.', true)
+      ('Plateau renforce sur mesure','Atelier','/produits/plateau-rond-renforce.jpg','Disque renforce : base, couvercle ou fond de cuve.', true),
+      ('Grille fenetre a volutes','Fenetres','/produits/grille-fenetre-volutes.jpg','Grille de protection peinte, volutes et rosaces forgees.', true),
+      ('Grille fenetre motif geometrique','Fenetres','/produits/grille-fenetre-motif.jpg','Grille brute en cours de fabrication, motif sur mesure.', true)
     ) AS v(title, category, image_url, description, published)
     WHERE NOT EXISTS (SELECT 1 FROM gallery g WHERE g.image_url = v.image_url);
   `);

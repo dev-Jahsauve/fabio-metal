@@ -10,6 +10,7 @@
     "db:migrate": "node scripts/migrate.mjs",
     "db:seed": "node scripts/seed.mjs",
     "db:seed-assets": "node scripts/seed-assets.mjs",
+    "admin:password": "node scripts/set-password.mjs",
     "typecheck": "tsc --noEmit",
     "db:status": "node scripts/db-status.mjs",
     "security:check": "node scripts/security-check.mjs",

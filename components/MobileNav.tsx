@@ -1,8 +1,8 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-const MAIN_LINKS: Array<[string, string]> = [
+const TABS: Array<[string, string]> = [
   ["Accueil", "/"],
   ["Services", "/services"],
   ["Boutique", "/boutique"],
@@ -11,33 +11,34 @@ const MAIN_LINKS: Array<[string, string]> = [
   ["À propos", "/a-propos"],
 ];
 
-const SPACE_LINKS: Array<[string, string]> = [
-  ["Mon compte", "/compte"],
-  ["Panier", "/panier"],
-];
-
 export default function MobileNav() {
   const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpen(false);
     };
+    const onDown = (e: MouseEvent) => {
+      if (!ref.current?.contains(e.target as Node)) setOpen(false);
+    };
     window.addEventListener("keydown", onKey);
+    window.addEventListener("mousedown", onDown);
     return () => {
-      document.body.style.overflow = prev;
       window.removeEventListener("keydown", onKey);
+      window.removeEventListener("mousedown", onDown);
     };
   }, [open ]);
 
+  const close = () => setOpen(false);
+
   return (
-    <div className="mobile-nav">
+    <div className="mobile-nav" ref={ref}>
       <button
         className="btn btn-icon burger"
         aria-expanded={open}
+        aria-haspopup="menu"
         aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}
         onClick={() => setOpen((v) => !v)}
       >
@@ -45,82 +46,37 @@ export default function MobileNav() {
       </button>
 
       {open && (
-        <>
-          <div
-            className="drawer-overlay"
-            onClick={() => setOpen(false)}
-            aria-hidden="true"
-          />
-          <aside
-            className="drawer"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Menu de navigation"
-          >
-            <div className="drawer-header">
-              <span className="logo">
-                <span className="logo-mark" aria-hidden="true">
-                  FM
-                </span>
-                <span className="logo-text">
-                  <span>FABIOLE METAL</span>
-                  <small>Atelier · Bojongo</small>
-                </span>
-              </span>
-              <button
-                className="btn btn-icon"
-                aria-label="Fermer le menu"
-                onClick={() => setOpen(false)}
-              >
-                <span aria-hidden="true">✕</span>
-              </button>
+        <div className="menu-dropdown" role="menu" aria-label="Menu">
+          <p className="menu-label">Onglets</p>
+          <nav className="menu-tabs" aria-label="Onglets de navigation">
+            {TABS.map(([label, href]) => (
+              <Link key={href} href={href} onClick={close}>
+                {label}
+                <span aria-hidden="true">→</span>
+              </Link>
+            ))}
+          </nav>
+
+          <p className="menu-label">Mon espace</p>
+          <div className="menu-account">
+            <Link href="/connexion" className="btn btn-primary menu-login" onClick={close}>
+              <span aria-hidden="true">🔐</span> Se connecter
+            </Link>
+            <span className="menu-sep">ou</span>
+            <Link href="/inscription" className="btn menu-register" onClick={close}>
+              Créer un compte <span aria-hidden="true">→</span>
+            </Link>
+            <div className="menu-row">
+              <Link href="/compte" onClick={close}>
+                Mon compte
+              </Link>
+              <span aria-hidden="true">·</span>
+              <Link href="/panier" onClick={close}>
+                Mon panier
+              </Link>
             </div>
-
-            <div className="drawer-body">
-              <section>
-                <div className="drawer-section-title">Navigation</div>
-                <nav className="drawer-links" aria-label="Navigation principale">
-                  {MAIN_LINKS.map(([label, href]) => (
-                    <Link
-                      key={href}
-                      href={href}
-                      onClick={() => setOpen(false)}
-                    >
-                      {label}
-                      <span aria-hidden="true">→</span>
-                    </Link>
-                  ))}
-                </nav>
-              </section>
-
-              <section>
-                <div className="drawer-section-title">Espace client</div>
-                <nav className="drawer-links" aria-label="Espace client">
-                  {SPACE_LINKS.map(([label, href]) => (
-                    <Link
-                      key={href}
-                      href={href}
-                      onClick={() => setOpen(false)}
-                    >
-                      {label}
-                      <span aria-hidden="true">→</span>
-                    </Link>
-                  ))}
-                </nav>
-              </section>
-
-              <div className="drawer-cta">
-                <Link
-                  href="/contact"
-                  className="btn btn-primary"
-                  onClick={() => setOpen(false)}
-                >
-                  Demander un devis
-                </Link>
-              </div>
-            </div>
-          </aside>
-        </>
+          </div>
+        </div>
       )}
     </div>
   );

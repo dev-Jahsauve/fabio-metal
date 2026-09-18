@@ -105,7 +105,7 @@ Si une ancienne base V1/V2 existe déjà, `0002_v1_compatibility.sql` ajoute les
 DATABASE_URL="..."
 AUTH_SECRET="au moins 32 caractères aléatoires"
 NEXT_PUBLIC_APP_URL="https://votre-domaine.tld"
-NEXT_PUBLIC_WHATSAPP="237678027116"
+NEXT_PUBLIC_WHATSAPP="237698308780"
 CRON_SECRET="secret long"
 ```
 
