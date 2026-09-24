@@ -48,6 +48,7 @@ export default function AddToCartButton({
       }
       setStatus("success");
       setMsg("Ajouté au panier.");
+      window.dispatchEvent(new CustomEvent("cart:updated"));
       r.refresh();
       // Retour à l'état normal après 2,5 s pour permettre un nouvel ajout
       if (timer.current) clearTimeout(timer.current);

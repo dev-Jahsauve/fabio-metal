@@ -95,15 +95,9 @@ export default function MobileNav() {
         aria-hidden={!open}
         inert={!open}
       >
-        <div className="nav-drawer-head">
-          <span className="nav-drawer-brand">
-            <span className="logo-mark" aria-hidden="true">
-              FM
-            </span>
-            <span>
-              <strong>FABIOLE METAL</strong>
-              <small>Atelier · Bojongo</small>
-            </span>
+        <div className="nav-drawer-head nav-drawer-head--minimal">
+          <span className="logo-mark nav-drawer-logo" aria-hidden="true">
+            FM
           </span>
           <button
             ref={closeBtnRef}
@@ -140,11 +134,11 @@ export default function MobileNav() {
         <div className="nav-drawer-foot nav-drawer-foot--login">
           <Link
             href="/connexion"
-            className="btn btn-primary nav-drawer-cta nav-drawer-login"
+            className="btn btn-primary btn-sm nav-drawer-login"
             onClick={close}
             tabIndex={open ? 0 : -1}
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
               <circle cx="12" cy="7" r="4" />
             </svg>

@@ -59,6 +59,7 @@ export default function CartView() {
         return;
       }
       setItems(data.items ?? []);
+      window.dispatchEvent(new CustomEvent("cart:updated"));
     } catch {
       setErr("Erreur réseau. Réessayez.");
     } finally {
@@ -109,6 +110,7 @@ export default function CartView() {
         return;
       }
       await load();
+      window.dispatchEvent(new CustomEvent("cart:updated"));
       r.refresh();
     } catch {
       setErr("Erreur réseau. Réessayez.");
