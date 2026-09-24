@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 const LINKS = [
   {
@@ -52,11 +53,18 @@ const LINKS = [
 
 export default function MobileNav() {
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
   const closeBtnRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLElement>(null);
 
   const close = useCallback(() => setOpen(false), []);
+
+  // Portail vers <body> : le header a un backdrop-filter qui emprisonnerait
+  // sinon le tiroir "position: fixed" dans une boîte de 70px (onglets coupés).
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Fermer lors d'un changement de page
   useEffect(() => {
@@ -99,22 +107,9 @@ export default function MobileNav() {
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname?.startsWith(href);
 
-  return (
+  // Voile + tiroir rendus dans <body> via portail (jamais bloqués par le header)
+  const overlayDrawer = (
     <>
-      {/* Bouton burger — visible uniquement sur mobile via CSS */}
-      <button
-        type="button"
-        className={`burger${open ? " is-open" : ""}`}
-        aria-expanded={open}
-        aria-controls="menu-mobile"
-        aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}
-        onClick={() => setOpen((v) => !v)}
-      >
-        <span aria-hidden="true" />
-        <span aria-hidden="true" />
-        <span aria-hidden="true" />
-      </button>
-
       {/* Voile */}
       <div
         className={`nav-overlay${open ? " is-open" : ""}`}
@@ -208,6 +203,26 @@ export default function MobileNav() {
           </div>
         </div>
       </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Bouton burger — visible uniquement sur mobile via CSS */}
+      <button
+        type="button"
+        className={`burger${open ? " is-open" : ""}`}
+        aria-expanded={open}
+        aria-controls="menu-mobile"
+        aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}
+        onClick={() => setOpen((v) => !v)}
+      >
+        <span aria-hidden="true" />
+        <span aria-hidden="true" />
+        <span aria-hidden="true" />
+      </button>
+
+      {mounted ? createPortal(overlayDrawer, document.body) : null}
     </>
   );
 }
