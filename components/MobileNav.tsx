@@ -5,11 +5,49 @@ import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const LINKS = [
-  { label: "Accueil", href: "/" },
-  { label: "Service", href: "/services" },
-  { label: "Boutique", href: "/boutique" },
-  { label: "Galerie", href: "/galerie" },
-  { label: "Contact", href: "/contact" },
+  {
+    label: "Accueil",
+    href: "/",
+    icon: (
+      <path d="m3 10 9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z" />
+    ),
+  },
+  {
+    label: "Services",
+    href: "/services",
+    icon: (
+      <path d="M14.7 6.3a4.5 4.5 0 0 0-6 6L3 18l3 3 5.7-5.7a4.5 4.5 0 0 0 6-6L14 13l-3-3Z" />
+    ),
+  },
+  {
+    label: "Boutique",
+    href: "/boutique",
+    icon: (
+      <>
+        <path d="M6 7h15l-1.6 7.2a2 2 0 0 1-2 1.6H8.7a2 2 0 0 1-2-1.6L4.2 3.9A1 1 0 0 0 3.2 3H1.5" />
+        <circle cx="9.5" cy="20.5" r="1.3" />
+        <circle cx="17.5" cy="20.5" r="1.3" />
+      </>
+    ),
+  },
+  {
+    label: "Galerie",
+    href: "/galerie",
+    icon: (
+      <>
+        <rect x="3" y="3" width="18" height="18" rx="2" />
+        <circle cx="9" cy="9" r="2" />
+        <path d="m21 15-3.5-3.5a2 2 0 0 0-3 0L6 20" />
+      </>
+    ),
+  },
+  {
+    label: "Contact",
+    href: "/contact",
+    icon: (
+      <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.7a2 2 0 0 1-.4 2.1L8.1 9.7a16 16 0 0 0 6 6l1.2-1.2a2 2 0 0 1 2.1-.4c.9.3 1.8.5 2.7.6a2 2 0 0 1 1.9 2Z" />
+    ),
+  },
 ];
 
 export default function MobileNav() {
@@ -96,8 +134,11 @@ export default function MobileNav() {
         inert={!open}
       >
         <div className="nav-drawer-head nav-drawer-head--minimal">
-          <span className="logo-mark nav-drawer-logo" aria-hidden="true">
-            FM
+          <span className="nav-drawer-brand">
+            <span className="logo-mark nav-drawer-logo" aria-hidden="true">
+              FM
+            </span>
+            <strong className="nav-drawer-title">FABIOLE METAL</strong>
           </span>
           <button
             ref={closeBtnRef}
@@ -113,37 +154,53 @@ export default function MobileNav() {
           </button>
         </div>
 
-        <nav className="nav-drawer-links" aria-label="Navigation mobile">
-          {LINKS.map((l) => (
+        <div className="nav-drawer-scroll">
+          <nav className="nav-drawer-links" aria-label="Navigation mobile">
+            {LINKS.map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                onClick={close}
+                aria-current={isActive(l.href) ? "page" : undefined}
+                className={isActive(l.href) ? "is-active" : undefined}
+                tabIndex={open ? 0 : -1}
+              >
+                <span className="nav-drawer-link-main">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    {l.icon}
+                  </svg>
+                  <span>{l.label}</span>
+                </span>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="m9 18 6-6-6-6" />
+                </svg>
+              </Link>
+            ))}
+          </nav>
+
+          {/* Actions compactes intégrées au scroll : ne masquent jamais les onglets */}
+          <div className="nav-drawer-actions">
             <Link
-              key={l.href}
-              href={l.href}
+              href="/connexion"
+              className="nav-drawer-action nav-drawer-action--ghost"
               onClick={close}
-              aria-current={isActive(l.href) ? "page" : undefined}
-              className={isActive(l.href) ? "is-active" : undefined}
               tabIndex={open ? 0 : -1}
             >
-              <span>{l.label}</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="m9 18 6-6-6-6" />
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
               </svg>
+              Connexion
             </Link>
-          ))}
-        </nav>
-
-        <div className="nav-drawer-foot nav-drawer-foot--login">
-          <Link
-            href="/connexion"
-            className="btn btn-primary btn-sm nav-drawer-login"
-            onClick={close}
-            tabIndex={open ? 0 : -1}
-          >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-            Connexion
-          </Link>
+            <Link
+              href="/contact"
+              className="nav-drawer-action nav-drawer-action--primary"
+              onClick={close}
+              tabIndex={open ? 0 : -1}
+            >
+              Devis gratuit
+            </Link>
+          </div>
         </div>
       </aside>
     </>
