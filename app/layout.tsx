@@ -24,7 +24,7 @@ export default function RootLayout({
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('fm-theme');var ok=['sombre','clair','ocean'];if(ok.indexOf(t)===-1){t='sombre';try{localStorage.setItem('fm-theme',t)}catch(e){}}document.documentElement.setAttribute('data-theme',t)}catch(e){}})();`,
+            __html: `(function(){try{var t=localStorage.getItem('fm-theme');if(t!=='clair'&&t!=='sombre'){t='sombre';try{localStorage.setItem('fm-theme',t)}catch(e){}}document.documentElement.setAttribute('data-theme',t)}catch(e){document.documentElement.setAttribute('data-theme','sombre')}})();`,
           }}
         />
       </head>
@@ -66,11 +66,16 @@ export default function RootLayout({
                 aria-label="Voir le panier"
                 title="Panier"
               >
-                <span aria-hidden="true">🛒</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <circle cx="9" cy="21" r="1" />
+                  <circle cx="20" cy="21" r="1" />
+                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                </svg>
               </Link>
               <Link
                 href="/compte"
                 className="btn btn-sm hide-mobile"
+                aria-label="Mon compte"
               >
                 Compte
               </Link>

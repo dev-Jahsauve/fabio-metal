@@ -152,28 +152,48 @@ export default async function Home() {
             <div className="shop-grid">
               {ps.map(({ p, categoryName }) => (
                 <article className="product" key={p.id}>
-                  {p.imageUrl && <img src={p.imageUrl} alt={p.name} loading="lazy" />}
+                  <div className="product-media">
+                    {p.imageUrl ? (
+                      <img src={p.imageUrl} alt={p.name} loading="lazy" />
+                    ) : (
+                      <div className="product-media-fallback" aria-hidden="true">
+                        FM
+                      </div>
+                    )}
+                    <div className="product-badges">
+                      {p.promoPriceXaf ? <span className="badge-promo">PROMO</span> : null}
+                    </div>
+                  </div>
                   <div className="product-body">
                     <div className="product-top">
                       {categoryName ? <span className="pill pill-cat">{categoryName}</span> : <span />}
                       {p.stock <= 0 ? <span className="pill pill-out">Rupture</span> : p.stock <= 5 ? <span className="pill pill-low">Plus que {p.stock}</span> : <span className="pill pill-ok">En stock</span>}
                     </div>
-                    <h3>{p.name}</h3>
-                    <p>{p.description}</p>
+                    <h3 title={p.name}>{p.name}</h3>
+                    <p className="product-desc">{p.description}</p>
                     <div className="price">
                       {formatXaf(p.promoPriceXaf ?? p.priceXaf)}
                       {p.promoPriceXaf && (
-                        <>
-                          <del className="old-price">{formatXaf(p.priceXaf)}</del>
-                          <span className="badge-promo">PROMO</span>
-                        </>
+                        <del className="old-price">{formatXaf(p.priceXaf)}</del>
                       )}
                     </div>
-                    <div className="actions">
-                      <Link className="btn" href={`/boutique/${p.slug}`}>
-                        Détails
-                      </Link>
-                      <AddToCartButton productId={p.id} stock={p.stock} />
+                    <div className="product-actions">
+                      <div className="product-actions-main">
+                        <AddToCartButton productId={p.id} stock={p.stock} />
+                      </div>
+                      <div className="product-actions-row">
+                        <Link className="btn" href={`/boutique/${p.slug}`}>
+                          Détails
+                        </Link>
+                        <a
+                          className="btn"
+                          href={waLink(`Bonjour FABIOLE METAL, je suis intéressé par "${p.name}".`)}
+                          target="_blank"
+                          rel="noopener"
+                        >
+                          WhatsApp
+                        </a>
+                      </div>
                     </div>
                   </div>
                 </article>
@@ -215,8 +235,25 @@ export default async function Home() {
           </div>
           <div className="gallery">
             {galleryImages.map((u: string, i: number) => (
-              <img key={i} src={u} alt="Référence de fabrication métallique" loading="lazy" />
+              <figure className="g-card" key={i}>
+                <div className="g-media">
+                  <img src={u} alt="Référence de fabrication métallique" loading="lazy" />
+                  <span className="g-cat">Atelier</span>
+                </div>
+                <figcaption>
+                  <strong>Réalisation {i + 1}</strong>
+                  <span>Fabrication sur mesure</span>
+                </figcaption>
+              </figure>
             ))}
+          </div>
+          <div className="actions" style={{ marginTop: 22 }}>
+            <Link href="/galerie" className="btn btn-primary">
+              Voir toute la galerie
+            </Link>
+            <Link href="/contact" className="btn">
+              Demander un devis
+            </Link>
           </div>
         </div>
       </section>

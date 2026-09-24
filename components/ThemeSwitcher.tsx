@@ -2,91 +2,61 @@
 
 import { useEffect, useState } from "react";
 
-const THEMES = [
-  { id: "sombre", label: "Sombre", dot: "#2F7DE1" },
-  { id: "clair", label: "Clair", dot: "#135FBD" },
-  { id: "ocean", label: "Océan", dot: "#12A8CC" },
-] as const;
-
-type ThemeId = (typeof THEMES)[number]["id"];
+type ThemeId = "sombre" | "clair";
 
 function getInitialTheme(): ThemeId {
   if (typeof window === "undefined") return "sombre";
-  const saved = window.localStorage.getItem("fm-theme") as ThemeId | null;
-  if (saved && THEMES.some((t) => t.id === saved)) return saved;
-  // Migration : ancien thème orange/énergie -> sombre pro
+  try {
+    const saved = window.localStorage.getItem("fm-theme");
+    if (saved === "clair" || saved === "sombre") return saved;
+  } catch {}
   return "sombre";
 }
 
 export default function ThemeSwitcher() {
   const [theme, setTheme] = useState<ThemeId>("sombre");
-  const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setTheme(getInitialTheme());
+    setMounted(true);
   }, []);
 
   useEffect(() => {
+    if (!mounted) return;
     document.documentElement.setAttribute("data-theme", theme);
     try {
       window.localStorage.setItem("fm-theme", theme);
     } catch {}
-  }, [theme]);
+  }, [theme, mounted]);
 
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-    const onClick = (e: MouseEvent) => {
-      const el = (e.target as HTMLElement).closest?.(".theme-switcher");
-      if (!el) setOpen(false);
-    };
-    window.addEventListener("keydown", onKey);
-    window.addEventListener("mousedown", onClick);
-    return () => {
-      window.removeEventListener("keydown", onKey);
-      window.removeEventListener("mousedown", onClick);
-    };
-  }, [open ]);
-
-  const current = THEMES.find((t) => t.id === theme) ?? THEMES[0];
+  const isDark = theme === "sombre";
 
   return (
-    <div className="theme-switcher">
-      <button
-        type="button"
-        className="btn btn-sm theme-btn"
-        aria-expanded={open}
-        aria-haspopup="menu"
-        aria-label="Changer de thème"
-        title={`Thème : ${current.label}`}
-        onClick={() => setOpen((v) => !v)}
-      >
-        <span className="theme-dot" style={{ backgroundColor: current.dot }} />
-        <span className="hide-mobile">{current.label}</span>
-      </button>
-      {open && (
-        <div className="theme-panel" role="menu" aria-label="Choisir un thème">
-          {THEMES.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              role="menuitemradio"
-              aria-checked={theme === t.id}
-              className={`theme-option${theme === t.id ? " active" : ""}`}
-              onClick={() => {
-                setTheme(t.id);
-                setOpen(false);
-              }}
-            >
-              <span className="theme-dot" style={{ backgroundColor: t.dot }} />
-              {t.label}
-              {theme === t.id && <span className="theme-check">✓</span>}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
+    <button
+      type="button"
+      className="theme-toggle"
+      role="switch"
+      aria-checked={isDark}
+      aria-label={isDark ? "Passer au thème clair" : "Passer au thème sombre"}
+      title={isDark ? "Thème sombre — passer au clair" : "Thème clair — passer au sombre"}
+      onClick={() => setTheme(isDark ? "clair" : "sombre")}
+    >
+      <span className="theme-toggle-track" aria-hidden="true">
+        <span className="theme-toggle-thumb">
+          {isDark ? (
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+            </svg>
+          ) : (
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="4" />
+              <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+            </svg>
+          )}
+        </span>
+      </span>
+      <span className="theme-toggle-label">{isDark ? "Sombre" : "Clair"}</span>
+    </button>
   );
 }
