@@ -154,7 +154,24 @@ export default function MobileNav() {
           </button>
         </div>
 
+        {/* Bouton Connexion tout en haut : visible immédiatement, ne cache rien */}
+        <div className="nav-drawer-top">
+          <Link
+            href="/connexion"
+            className="nav-drawer-top-login"
+            onClick={close}
+            tabIndex={open ? 0 : -1}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+            Connexion
+          </Link>
+        </div>
+
         <div className="nav-drawer-scroll">
+          <p className="nav-drawer-label" aria-hidden="true">Menu</p>
           <nav className="nav-drawer-links" aria-label="Navigation mobile">
             {LINKS.map((l) => (
               <Link
@@ -178,27 +195,15 @@ export default function MobileNav() {
             ))}
           </nav>
 
-          {/* Actions compactes intégrées au scroll : ne masquent jamais les onglets */}
-          <div className="nav-drawer-actions">
-            <Link
-              href="/connexion"
-              className="nav-drawer-action nav-drawer-action--ghost"
-              onClick={close}
-              tabIndex={open ? 0 : -1}
-            >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
-              Connexion
-            </Link>
+          {/* Devis compact en bas, petit et discret */}
+          <div className="nav-drawer-actions nav-drawer-actions--single">
             <Link
               href="/contact"
               className="nav-drawer-action nav-drawer-action--primary"
               onClick={close}
               tabIndex={open ? 0 : -1}
             >
-              Devis gratuit
+              Demander un devis gratuit
             </Link>
           </div>
         </div>

@@ -1459,6 +1459,47 @@ h3 {
 .nav-drawer-links a.is-active svg {
   color: var(--accent);
 }
+/* Bouton Connexion tout en haut : fixe, compact, visible d'un coup d'œil */
+.nav-drawer-top {
+  flex: 0 0 auto;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+  background-color: var(--panel);
+}
+.nav-drawer-top-login {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 38px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  white-space: nowrap;
+  border: 1px solid var(--line);
+  background-color: var(--panel2);
+  color: var(--text);
+  transition: border-color 0.15s, background-color 0.15s, transform 0.15s;
+}
+.nav-drawer-top-login:hover {
+  border-color: var(--accent);
+  background-color: var(--accent-soft);
+}
+.nav-drawer-top-login:active {
+  transform: scale(0.98);
+}
+.nav-drawer-label {
+  margin: 0;
+  padding: 10px 14px 2px;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  flex: 0 0 auto;
+}
 /* Zone scroll unique : les onglets restent toujours visibles, rien ne les recouvre */
 .nav-drawer-scroll {
   flex: 1 1 auto;
@@ -1468,7 +1509,7 @@ h3 {
   flex-direction: column;
   overscroll-behavior: contain;
 }
-/* Actions compactes en bas du scroll, jamais en overlay fixe */
+/* Devis compact en bas, une seule ligne discrète */
 .nav-drawer-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1477,6 +1518,9 @@ h3 {
   margin-top: 6px;
   border-top: 1px solid var(--line);
   flex: 0 0 auto;
+}
+.nav-drawer-actions--single {
+  grid-template-columns: 1fr;
 }
 .nav-drawer-action {
   display: inline-flex;
