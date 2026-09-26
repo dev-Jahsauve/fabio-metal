@@ -76,46 +76,29 @@ export default function MobileNav() {
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
   const closeBtnRef = useRef<HTMLButtonElement>(null);
-  const panelRef = useRef<HTMLElement>(null);
 
   const close = useCallback(() => setOpen(false), []);
+  const toggle = useCallback(() => setOpen((v) => !v), []);
 
-  // Portail vers <body> : le header a un backdrop-filter qui emprisonnerait
-  // sinon le tiroir "position: fixed" dans une boîte de 70px (onglets coupés).
+  // Rendu dans <body> via portail : le header a un backdrop-filter qui
+  // emprisonnerait sinon le tiroir "position: fixed".
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Fermer lors d'un changement de page
+  // Fermer dès que la navigation aboutit (clic sur un onglet, bouton retour…).
   useEffect(() => {
     setOpen(false);
   }, [pathname]);
 
-  // Verrouiller le scroll + touche Échap + focus
+  // Verrouiller le scroll de la page + touche Échap pendant l'ouverture.
   useEffect(() => {
     if (!open) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     closeBtnRef.current?.focus();
-
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") close();
-      // Focus trap minimal : garder le focus dans le panneau avec Tab
-      if (e.key === "Tab" && panelRef.current) {
-        const focusables = panelRef.current.querySelectorAll<HTMLElement>(
-          'a[href], button:not([disabled])'
-        );
-        if (focusables.length === 0) return;
-        const first = focusables[0];
-        const last = focusables[focusables.length - 1];
-        if (e.shiftKey && document.activeElement === first) {
-          e.preventDefault();
-          last.focus();
-        } else if (!e.shiftKey && document.activeElement === last) {
-          e.preventDefault();
-          first.focus();
-        }
-      }
     };
     window.addEventListener("keydown", onKey);
     return () => {
@@ -127,112 +110,6 @@ export default function MobileNav() {
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname?.startsWith(href);
 
-  // Voile + tiroir rendus dans <body> via portail (jamais bloqués par le header)
-  const overlayDrawer = (
-    <>
-      {/* Voile */}
-      <div
-        className={`nav-overlay${open ? " is-open" : ""}`}
-        aria-hidden={!open}
-        onClick={close}
-      />
-
-      {/* Tiroir latéral */}
-      <aside
-        id="menu-mobile"
-        ref={panelRef}
-        className={`nav-drawer${open ? " is-open" : ""}`}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Menu de navigation"
-        aria-hidden={!open}
-        inert={!open}
-      >
-        <div className="nav-drawer-head nav-drawer-head--minimal">
-          <span className="nav-drawer-brand">
-            <span className="logo-mark nav-drawer-logo" aria-hidden="true">
-              FM
-            </span>
-            <strong className="nav-drawer-title">FABIOLE METAL</strong>
-          </span>
-          <button
-            ref={closeBtnRef}
-            type="button"
-            className="nav-drawer-close"
-            aria-label="Fermer le menu"
-            onClick={close}
-            tabIndex={open ? 0 : -1}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-              <path d="M18 6 6 18M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-
-        {/* Bouton Connexion tout en haut : visible immédiatement, ne cache rien */}
-        <div className="nav-drawer-top">
-          <Link
-            href="/connexion"
-            className="nav-drawer-top-login"
-            onClick={close}
-            tabIndex={open ? 0 : -1}
-          >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-            Connexion
-          </Link>
-          <Link href="/parametres" className="nav-drawer-top-login" onClick={close} tabIndex={open ? 0 : -1} style={{ marginTop: 8 }}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <circle cx="12" cy="12" r="3" />
-              <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.2a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.2a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.2a1.7 1.7 0 0 0 1 1.5h.1a1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v.1a1.7 1.7 0 0 0 1.5 1h.2a2 2 0 1 1 0 4h-.2a1.7 1.7 0 0 0-1.5 1Z" />
-            </svg>
-            Paramètres
-          </Link>
-        </div>
-
-        <div className="nav-drawer-scroll">
-          <p className="nav-drawer-label" aria-hidden="true">Menu</p>
-          <nav className="nav-drawer-links" aria-label="Navigation mobile">
-            {LINKS.map((l) => (
-              <Link
-                key={l.href}
-                href={l.href}
-                onClick={close}
-                aria-current={isActive(l.href) ? "page" : undefined}
-                className={isActive(l.href) ? "is-active" : undefined}
-                tabIndex={open ? 0 : -1}
-              >
-                <span className="nav-drawer-link-main">
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    {l.icon}
-                  </svg>
-                  <span>{l.label}</span>
-                </span>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="m9 18 6-6-6-6" />
-                </svg>
-              </Link>
-            ))}
-          </nav>
-
-          {/* Devis compact en bas, petit et discret */}
-          <div className="nav-drawer-actions nav-drawer-actions--single">
-            <Link
-              href="/contact"
-              className="nav-drawer-action nav-drawer-action--primary"
-              onClick={close}
-              tabIndex={open ? 0 : -1}
-            >
-              Demander un devis gratuit
-            </Link>
-          </div>
-        </div>
-      </aside>
-    </>
-  );
-
   return (
     <>
       {/* Bouton burger — visible uniquement sur mobile via CSS */}
@@ -242,14 +119,118 @@ export default function MobileNav() {
         aria-expanded={open}
         aria-controls="menu-mobile"
         aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}
-        onClick={() => setOpen((v) => !v)}
+        onClick={toggle}
       >
         <span aria-hidden="true" />
         <span aria-hidden="true" />
         <span aria-hidden="true" />
       </button>
 
-      {mounted ? createPortal(overlayDrawer, document.body) : null}
+      {mounted
+        ? createPortal(
+            <>
+              {/* Voile : un clic ferme le menu */}
+              <div
+                className={`nav-overlay${open ? " is-open" : ""}`}
+                aria-hidden="true"
+                onClick={close}
+              />
+
+              {/* Tiroir latéral. Fermé = visibility:hidden (ni visible,
+                  ni cliquable, ni atteignable au clavier). */}
+              <aside
+                id="menu-mobile"
+                className={`nav-drawer${open ? " is-open" : ""}`}
+                role="dialog"
+                aria-modal="true"
+                aria-label="Menu de navigation"
+                aria-hidden={!open}
+              >
+                <div className="nav-drawer-head nav-drawer-head--minimal">
+                  <span className="nav-drawer-brand">
+                    <span className="logo-mark nav-drawer-logo" aria-hidden="true">
+                      FM
+                    </span>
+                    <strong className="nav-drawer-title">FABIOLE METAL</strong>
+                  </span>
+                  <button
+                    ref={closeBtnRef}
+                    type="button"
+                    className="nav-drawer-close"
+                    aria-label="Fermer le menu"
+                    onClick={close}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                      <path d="M18 6 6 18M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+
+                <div className="nav-drawer-top">
+                  <Link
+                    href="/connexion"
+                    className="nav-drawer-top-login"
+                    onClick={close}
+                  >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                      <circle cx="12" cy="7" r="4" />
+                    </svg>
+                    Connexion
+                  </Link>
+                  <Link
+                    href="/parametres"
+                    className="nav-drawer-top-login"
+                    onClick={close}
+                    style={{ marginTop: 8 }}
+                  >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <circle cx="12" cy="12" r="3" />
+                      <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+                    </svg>
+                    Paramètres
+                  </Link>
+                </div>
+
+                <div className="nav-drawer-scroll">
+                  <p className="nav-drawer-label" aria-hidden="true">Menu</p>
+                  <nav className="nav-drawer-links" aria-label="Navigation mobile">
+                    {LINKS.map((l) => (
+                      <Link
+                        key={l.href}
+                        href={l.href}
+                        onClick={close}
+                        aria-current={isActive(l.href) ? "page" : undefined}
+                        className={isActive(l.href) ? "is-active" : undefined}
+                      >
+                        <span className="nav-drawer-link-main">
+                          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            {l.icon}
+                          </svg>
+                          <span>{l.label}</span>
+                        </span>
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="m9 18 6-6-6-6" />
+                        </svg>
+                      </Link>
+                    ))}
+                  </nav>
+
+                  <div className="nav-drawer-actions nav-drawer-actions--single">
+                    <Link
+                      href="/contact"
+                      className="nav-drawer-action nav-drawer-action--primary"
+                      onClick={close}
+                    >
+                      Demander un devis gratuit
+                    </Link>
+                  </div>
+                </div>
+              </aside>
+            </>,
+            document.body
+          )
+        : null}
     </>
   );
 }

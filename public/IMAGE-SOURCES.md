@@ -1,4 +1,9 @@
-Les images de démonstration distantes utilisées dans la première version proviennent de Wikimedia Commons.
-- Iron Gate welding.jpg — Minette Lontsie — Cameroon — CC BY-SA 4.0
-- Soudeur fabrication d'une porte fer.jpg — Minette Lontsie — Cameroon — CC BY-SA 4.0
-Elles sont des références visuelles et ne représentent pas FABIOLE METAL. Remplacer par les vraies photos du client avant mise en production, ou conserver les crédits/licences requis.
+# Sources des images — FABIOLE METAL
+
+Toutes les images locales du site sont les vraies photos de l'atelier,
+fournies par le client (dossier `assets/`, reprises dans `public/produits/`).
+Aucune image de démonstration ou générée n'est utilisée.
+
+Seule exception : le visuel de la page `/connexion`
+(`images.unsplash.com/photo-1504917595217-d4dc5ebe6122` — étincelles de soudure),
+conservé comme fond décoratif de l'écran de connexion.
