@@ -1,2 +1,129 @@
-import {getCurrentUser} from "@/lib/auth"; import Link from "next/link"; import {db} from "@/lib/db"; import {orders,notifications} from "@/lib/db/schema"; import {desc,eq} from "drizzle-orm"; import {formatXaf,orderReference} from "@/lib/utils"; import LogoutButton from "@/components/LogoutButton";
-export default async function Compte(){const u=await getCurrentUser();if(!u)return <main className="section"><div className="container"><div className="card"><h1>Espace client</h1><p>Connectez-vous pour accéder à votre espace.</p><Link className="btn btn-gold" href="/connexion">Connexion</Link></div></div></main>;const rows=await db.select().from(orders).where(eq(orders.userId,u.id)).orderBy(desc(orders.createdAt)).limit(20);const notes=await db.select().from(notifications).where(eq(notifications.userId,u.id)).orderBy(desc(notifications.createdAt)).limit(8);return <main className="section"><div className="container"><span className="eyebrow">Espace client</span><h1>Bonjour, {u.name}.</h1><div className="actions"><Link className="btn btn-gold" href="/boutique">Continuer mes achats</Link><Link className="btn" href="/panier">Mon panier</Link><LogoutButton/></div><div className="cards" style={{marginTop:25}}><div className="card"><h3>Vos coordonnées</h3><p>{u.email}<br/>{u.phone||"Téléphone non renseigné"}</p></div><div className="card"><h3>Commandes</h3><p>{rows.length} commande(s) récente(s).</p></div></div><section className="section" style={{paddingBottom:0}}><div className="head"><span className="eyebrow">Historique</span><h2>Vos commandes</h2></div>{rows.length?<div className="order-list">{rows.map(o=><article className="card" key={o.id}><div><strong>{orderReference(o.id)}</strong><p>{o.status} · {new Date(o.createdAt).toLocaleString('fr-FR')}</p></div><strong className="price">{formatXaf(o.totalXaf)}</strong><Link className="btn" href={`/commandes/${o.id}`}>Détails</Link></article>)}</div>:<div className="card"><p>Aucune commande pour le moment.</p></div>}</section><section className="section" style={{paddingBottom:0}}><div className="head"><span className="eyebrow">Notifications</span><h2>Dernières informations</h2></div><div className="order-list">{notes.length?notes.map(n=><article className="card" key={n.id}><strong>{n.title}</strong><p>{n.message}</p><small>{new Date(n.createdAt).toLocaleString('fr-FR')}</small></article>):<div className="card">Aucune notification.</div>}</div></section>{u.role==="admin"&&<div style={{marginTop:25}}><Link className="btn btn-gold" href="/admin">Ouvrir le dashboard</Link></div>}</div></main>}
+import { getCurrentUser } from "@/lib/auth";
+import Link from "next/link";
+import { db } from "@/lib/db";
+import { orders, notifications } from "@/lib/db/schema";
+import { desc, eq } from "drizzle-orm";
+import { formatXaf, orderReference } from "@/lib/utils";
+import LogoutButton from "@/components/LogoutButton";
+
+export default async function Compte() {
+  const u = await getCurrentUser();
+  if (!u)
+    return (
+      <main className="section">
+        <div className="container">
+          <div className="card">
+            <h1>Espace client</h1>
+            <p>Connectez-vous pour accéder à votre espace.</p>
+            <Link className="btn btn-gold" href="/connexion">
+              Connexion
+            </Link>
+          </div>
+        </div>
+      </main>
+    );
+  const rows = await db.select().from(orders).where(eq(orders.userId, u.id)).orderBy(desc(orders.createdAt)).limit(20);
+  const notes = await db.select().from(notifications).where(eq(notifications.userId, u.id)).orderBy(desc(notifications.createdAt)).limit(8);
+  const avatarUrl = (u as unknown as Record<string, unknown>).avatarUrl as string | null | undefined;
+  return (
+    <main className="section">
+      <div className="container">
+        <span className="eyebrow">Espace client</span>
+        <div className="profile-avatar-row" style={{ margin: "10px 0 4px" }}>
+          <span className="profile-avatar" aria-hidden="true">
+            {avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={avatarUrl} alt="" />
+            ) : (
+              (u.name.trim().charAt(0) || "F").toUpperCase()
+            )}
+          </span>
+          <h1 style={{ margin: 0 }}>Bonjour, {u.name}.</h1>
+        </div>
+        <div className="actions">
+          <Link className="btn btn-gold" href="/boutique">
+            Continuer mes achats
+          </Link>
+          <Link className="btn" href="/panier">
+            Mon panier
+          </Link>
+          <Link className="btn" href="/parametres">
+            ⚙ Paramètres / Profil
+          </Link>
+          <LogoutButton />
+        </div>
+        <div className="cards" style={{ marginTop: 25 }}>
+          <div className="card">
+            <h3>Vos coordonnées</h3>
+            <p>
+              {u.email}
+              <br />
+              {u.phone || "Téléphone non renseigné"}
+            </p>
+            <Link className="btn btn-sm" href="/parametres" style={{ marginTop: 8 }}>
+              Modifier mon profil
+            </Link>
+          </div>
+          <div className="card">
+            <h3>Commandes</h3>
+            <p>{rows.length} commande(s) récente(s).</p>
+          </div>
+        </div>
+        <section className="section" style={{ paddingBottom: 0 }}>
+          <div className="head">
+            <span className="eyebrow">Historique</span>
+            <h2>Vos commandes</h2>
+          </div>
+          {rows.length ? (
+            <div className="order-list">
+              {rows.map((o) => (
+                <article className="card" key={o.id}>
+                  <div>
+                    <strong>{orderReference(o.id)}</strong>
+                    <p>
+                      {o.status} · {new Date(o.createdAt).toLocaleString("fr-FR")}
+                    </p>
+                  </div>
+                  <strong className="price">{formatXaf(o.totalXaf)}</strong>
+                  <Link className="btn" href={`/commandes/${o.id}`}>
+                    Détails
+                  </Link>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div className="card">
+              <p>Aucune commande pour le moment.</p>
+            </div>
+          )}
+        </section>
+        <section className="section" style={{ paddingBottom: 0 }}>
+          <div className="head">
+            <span className="eyebrow">Notifications</span>
+            <h2>Dernières informations</h2>
+          </div>
+          <div className="order-list">
+            {notes.length ? (
+              notes.map((n) => (
+                <article className="card" key={n.id}>
+                  <strong>{n.title}</strong>
+                  <p>{n.message}</p>
+                  <small>{new Date(n.createdAt).toLocaleString("fr-FR")}</small>
+                </article>
+              ))
+            ) : (
+              <div className="card">Aucune notification.</div>
+            )}
+          </div>
+        </section>
+        {u.role === "admin" && (
+          <div style={{ marginTop: 25 }}>
+            <Link className="btn btn-gold" href="/admin">
+              Ouvrir le dashboard
+            </Link>
+          </div>
+        )}
+      </div>
+    </main>
+  );
+}

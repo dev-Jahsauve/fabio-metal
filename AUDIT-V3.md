@@ -30,9 +30,9 @@ Le projet V2 avait déjà été enrichi mais supposait implicitement que certain
 
 ## Ce qui reste externe
 
-- compte marchand CinetPay et clés API
+- compte marchand NelsiusPay et clé API
 - domaine public et URL HTTPS
-- configuration du webhook CinetPay
+- configuration du webhook NelsiusPay
 - éventuel fournisseur d'email Resend
 - éventuel fournisseur d'images Cloudinary/Vercel Blob/S3
 - photos réelles de FABIOLE METAL

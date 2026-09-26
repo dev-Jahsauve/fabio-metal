@@ -7,3 +7,5 @@ out/
 npm-debug.log*
 *.tsbuildinfo
 .DS_Store
+public/avatars/*
+!public/avatars/.gitkeep

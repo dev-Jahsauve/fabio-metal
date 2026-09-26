@@ -1,12 +1,12 @@
 import Link from "next/link"; import ServiceCarousel from "@/components/ServiceCarousel"; import {db} from '@/lib/db'; import {services} from '@/lib/db/schema'; import {asc,eq} from 'drizzle-orm';
 
 const SERVICE_IMGS = [
-  "https://upload.wikimedia.org/wikipedia/commons/3/3c/Iron_Gate_welding.jpg",
-  "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&q=80&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&q=80&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=800&q=80&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=800&q=80&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=800&q=80&auto=format&fit=crop",
+  "/produits/portail-moderne-noir.jpg",
+  "/produits/porte-entree-volutes.jpg",
+  "/produits/grille-fenetre-volutes.jpg",
+  "/produits/barbecue-sur-pieds.jpg",
+  "/produits/panneau-porte-embouti.jpg",
+  "/produits/support-marmite.jpg",
 ];
 
 const ICONS = ["POR", "POR", "FEN", "MOB", "RDM", "SUR"];

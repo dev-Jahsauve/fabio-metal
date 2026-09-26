@@ -5,8 +5,11 @@ import { db } from "@/lib/db";
 import { passwordResetTokens, users } from "@/lib/db/schema";
 import { consumePasswordReset } from "@/lib/password-reset";
 import { hashPassword } from "@/lib/auth";
+import { rateLimit, requestIp } from "@/lib/rate-limit";
 
 export async function POST(req: Request) {
+  const rl = await rateLimit(`reset:${requestIp(req)}`, 10, 15 * 60_000);
+  if (!rl.ok) return NextResponse.json({ error: "Trop de tentatives. Réessayez plus tard." }, { status: 429 });
   const parsed = z.object({ token: z.string().min(40).max(100), password: z.string().min(8).max(128) }).safeParse(await req.json());
   if (!parsed.success) return NextResponse.json({ error: "Lien ou mot de passe invalide" }, { status: 400 });
   const row = await consumePasswordReset(parsed.data.token);

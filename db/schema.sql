@@ -11,9 +11,11 @@ DO $$ BEGIN CREATE TYPE notification_status AS ENUM ('pending','sent','failed');
 CREATE TABLE IF NOT EXISTS users (
  id uuid PRIMARY KEY DEFAULT gen_random_uuid(), name varchar(120) NOT NULL, email varchar(190) NOT NULL UNIQUE,
  phone varchar(30), password_hash text NOT NULL, role role NOT NULL DEFAULT 'customer', email_verified_at timestamptz,
+ avatar_url text, google_sub varchar(120),
  created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now(), last_login_at timestamptz
 );
 CREATE INDEX IF NOT EXISTS users_role_idx ON users(role);
+CREATE UNIQUE INDEX IF NOT EXISTS users_google_sub_unique ON users(google_sub) WHERE google_sub IS NOT NULL;
 
 CREATE TABLE IF NOT EXISTS password_reset_tokens (
  id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,

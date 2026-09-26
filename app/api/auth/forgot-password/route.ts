@@ -21,6 +21,14 @@ export async function POST(req: Request) {
     return NextResponse.json(body);
   } catch (e) {
     console.error(e);
-    return NextResponse.json({ ok: true, message: "Si un compte existe pour cette adresse, un lien de réinitialisation sera envoyé." });
+    // Hors production, on expose le lien même si l'envoi email échoue
+    // (ex : domaine expéditeur non vérifié) pour ne jamais bloquer les tests.
+    const body: Record<string, unknown> = { ok: true, message: "Si un compte existe pour cette adresse, un lien de réinitialisation sera envoyé." };
+    if (process.env.NODE_ENV !== "production") {
+      const { getAppUrl } = await import("@/lib/utils");
+      body.devResetUrl = `${getAppUrl()}/reinitialiser-mot-de-passe?token=${encodeURIComponent(token)}`;
+      body.emailWarning = "L'envoi email a échoué : vérifiez RESEND_API_KEY et le domaine expéditeur.";
+    }
+    return NextResponse.json(body);
   }
 }

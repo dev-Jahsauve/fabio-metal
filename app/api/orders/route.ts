@@ -6,7 +6,7 @@ import { db } from "@/lib/db";
 import { addresses, auditLogs, cartItems, carts, notifications, orderItems, orders, payments, products, users } from "@/lib/db/schema";
 import { requireUser } from "@/lib/auth";
 import { errorResponse } from "@/lib/api";
-import { initializeCinetPayPayment } from "@/lib/payments";
+import { initiateNelsiusCheckout, getNelsiusPaymentLink } from "@/lib/nelsiuspay";
 import { restoreReservedStock } from "@/lib/order-service";
 import { getAppUrl, orderReference } from "@/lib/utils";
 
@@ -50,7 +50,7 @@ export async function POST(req: Request) {
       const subtotal = rows.reduce((sum, r) => sum + r.unitPrice * r.quantity, 0);
       const deliveryFee = Number.parseInt(process.env.DEFAULT_DELIVERY_FEE_XAF || "0", 10) || 0;
       const total = subtotal + deliveryFee;
-      if (total <= 0 || total % 5 !== 0) throw new Error("PAYMENT_AMOUNT_INVALID");
+      if (!Number.isInteger(total) || total <= 0) throw new Error("PAYMENT_AMOUNT_INVALID");
 
       let addressSnapshot = { recipientName: null as string | null, phone: null as string | null, addressLine: null as string | null, city: null as string | null, region: null as string | null };
       if (input.addressId) {
@@ -79,7 +79,7 @@ export async function POST(req: Request) {
       const [order] = await tx.insert(orders).values({ idempotencyKey, userId: session.userId, subtotalXaf: subtotal, deliveryFeeXaf: deliveryFee, discountXaf: 0, taxXaf: 0, currency: "XAF", totalXaf: total, customerNote: input.note, ...({ shippingRecipientName: addressSnapshot.recipientName, shippingPhone: addressSnapshot.phone, shippingAddressLine: addressSnapshot.addressLine, shippingCity: addressSnapshot.city, shippingRegion: addressSnapshot.region }) }).returning();
       await tx.insert(orderItems).values(rows.map(r => ({ orderId: order.id, productId: r.product.id, productNameSnapshot: r.product.name, skuSnapshot: r.product.sku, quantity: r.quantity, unitPriceXaf: r.unitPrice })));
       const transactionId = `FM${order.id.replaceAll("-", "")}`;
-      const [payment] = await tx.insert(payments).values({ orderId: order.id, provider: "cinetpay", transactionId, amountXaf: total, currency: "XAF", status: "pending", expiresAt: new Date(Date.now() + 30 * 60_000) }).returning();
+      const [payment] = await tx.insert(payments).values({ orderId: order.id, provider: "nelsiuspay", transactionId, amountXaf: total, currency: "XAF", status: "pending", expiresAt: new Date(Date.now() + 30 * 60_000) }).returning();
       await tx.insert(notifications).values({ userId: session.userId, orderId: order.id, type: "order_created", title: "Commande créée", message: `Votre commande ${orderReference(order.id)} est en attente de paiement.` });
       const adminsForOrder = await tx.select({ id: users.id }).from(users).where(eq(users.role, "admin"));
       if (adminsForOrder.length) await tx.insert(notifications).values(adminsForOrder.map(a => ({ userId: a.id, orderId: order.id, type: "new_order", title: "Nouvelle commande", message: `Une nouvelle commande ${orderReference(order.id)} attend un paiement.` })));
@@ -92,8 +92,17 @@ export async function POST(req: Request) {
     if (!user) throw new Error("USER_NOT_FOUND");
     let gateway;
     try {
-      gateway = await initializeCinetPayPayment({ transactionId: result.payment.transactionId, amountXaf: result.order.totalXaf, orderId: result.order.id, customerName: user.name, customerEmail: user.email, customerPhone: user.phone });
-    } catch (providerError) {
+      gateway = await initiateNelsiusCheckout({ reference: result.payment.transactionId, amountXaf: result.order.totalXaf, orderId: result.order.id, customerName: user.name, customerEmail: user.email, customerPhone: user.phone });
+    } catch (providerError: any) {
+      // Mode dégradé : pas de clé API mais un lien de paiement statique NelsiusPay
+      // configuré → le client paie via ce lien, l'admin confirme manuellement.
+      if (providerError?.message === "PAYMENT_PROVIDER_NOT_CONFIGURED") {
+        const staticLink = getNelsiusPaymentLink();
+        if (staticLink) {
+          await db.update(payments).set({ status: "pending", paymentUrl: staticLink, providerResponse: { mode: "static-link" }, updatedAt: new Date() }).where(eq(payments.id, result.payment.id));
+          return NextResponse.json({ orderId: result.order.id, reference: orderReference(result.order.id), paymentUrl: staticLink, manual: true });
+        }
+      }
       await db.transaction(async (tx) => {
         await tx.update(payments).set({ status: "failed", updatedAt: new Date() }).where(eq(payments.id, result.payment.id));
         await restoreReservedStock(tx, result.order.id);
@@ -103,12 +112,12 @@ export async function POST(req: Request) {
       throw providerError;
     }
     try {
-      await db.update(payments).set({ status: "processing", paymentUrl: gateway.data.payment_url, providerResponse: gateway, updatedAt: new Date() }).where(eq(payments.id, result.payment.id));
+      await db.update(payments).set({ status: "processing", paymentUrl: gateway.paymentUrl, providerResponse: gateway.raw, updatedAt: new Date() }).where(eq(payments.id, result.payment.id));
     } catch (storageError) {
       console.error(storageError);
       return NextResponse.json({ error: "La transaction de paiement a été créée, mais son enregistrement local est temporairement indisponible. Le webhook reste actif." }, { status: 503 });
     }
-    return NextResponse.json({ orderId: result.order.id, reference: orderReference(result.order.id), paymentUrl: gateway.data.payment_url });
+    return NextResponse.json({ orderId: result.order.id, reference: orderReference(result.order.id), paymentUrl: gateway.paymentUrl });
   } catch (e: any) {
     if (e?.message === "PRODUCT_UNAVAILABLE") return NextResponse.json({ error: "Un article du panier n'est plus disponible." }, { status: 409 });
     if (e?.message === "INSUFFICIENT_STOCK") return NextResponse.json({ error: "Stock insuffisant pour au moins un article." }, { status: 409 });

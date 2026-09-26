@@ -1,10 +1,11 @@
 "use client";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import PasswordField from "@/components/PasswordField";
+import GoogleLoginButton from "@/components/GoogleLoginButton";
 
-const AUTH_IMG =
-  "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1000&q=80&auto=format&fit=crop";
+const AUTH_IMG = "/produits/porte-decorative-grille.jpg";
 
 export default function Inscription() {
   const [name, setName] = useState("");
@@ -62,15 +63,18 @@ export default function Inscription() {
               Téléphone
               <input autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+237..." />
             </label>
-            <label>
-              Mot de passe
-              <input required minLength={8} type="password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="8 caractères minimum" />
-            </label>
+            <PasswordField label="Mot de passe" value={password} onChange={setPassword} autoComplete="new-password" placeholder="8 caractères minimum" minLength={8} />
             {err && <p className="error">{err}</p>}
             <button className="btn btn-primary" disabled={loading}>
               {loading ? "Création..." : "Créer mon compte →"}
             </button>
           </form>
+          <div className="auth-divider" aria-hidden="true">
+            <span>ou</span>
+          </div>
+          <Suspense>
+            <GoogleLoginButton label="S'inscrire avec Google" />
+          </Suspense>
           <div className="auth-links">
             <p>
               Déjà inscrit ? <Link href="/connexion">Se connecter</Link>

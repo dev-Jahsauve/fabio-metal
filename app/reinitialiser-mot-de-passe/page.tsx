@@ -2,11 +2,11 @@
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import PasswordField from "@/components/PasswordField";
 
 export const dynamic = "force-dynamic";
 
-const AUTH_IMG =
-  "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=1000&q=80&auto=format&fit=crop";
+const AUTH_IMG = "/produits/plateau-rond-renforce.jpg";
 
 function ResetForm() {
   const params = useSearchParams();
@@ -63,14 +63,8 @@ function ResetForm() {
             <>
               <p className="auth-sub">Créez votre nouveau mot de passe ci-dessous.</p>
               <form className="form" onSubmit={submit}>
-                <label>
-                  Nouveau mot de passe
-                  <input required minLength={8} type="password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="8 caractères minimum" />
-                </label>
-                <label>
-                  Confirmer
-                  <input required minLength={8} type="password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="Répétez le mot de passe" />
-                </label>
+                <PasswordField label="Nouveau mot de passe" value={password} onChange={setPassword} autoComplete="new-password" placeholder="8 caractères minimum" minLength={8} />
+                <PasswordField label="Confirmer" value={confirm} onChange={setConfirm} autoComplete="new-password" placeholder="Répétez le mot de passe" minLength={8} />
                 {err && <p className="error">{err}</p>}
                 {msg && <p className="success">{msg}</p>}
                 <button className="btn btn-primary" disabled={busy || !token}>

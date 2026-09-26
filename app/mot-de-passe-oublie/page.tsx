@@ -2,8 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 
-const AUTH_IMG =
-  "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=1000&q=80&auto=format&fit=crop";
+const AUTH_IMG = "/produits/patere-murale.jpg";
 
 export default function ForgotPassword(){
   const [email,setEmail]=useState('');
@@ -19,6 +18,7 @@ export default function ForgotPassword(){
       if(!r.ok){setErr(j.error||'Erreur');return}
       setMsg(j.message);
       if(j.devResetUrl)setMsg(`${j.message} Lien de test local : ${j.devResetUrl}`);
+      if(j.emailWarning)setMsg((m)=>`${m} (${j.emailWarning})`);
     }finally{setBusy(false)}
   }
   return (

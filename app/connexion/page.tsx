@@ -2,6 +2,8 @@
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import PasswordField from "@/components/PasswordField";
+import GoogleLoginButton from "@/components/GoogleLoginButton";
 
 export const dynamic = "force-dynamic";
 
@@ -56,15 +58,16 @@ function ConnexionForm() {
               Email
               <input required type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="vous@exemple.com" />
             </label>
-            <label>
-              Mot de passe
-              <input required type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
-            </label>
+            <PasswordField value={password} onChange={setPassword} autoComplete="current-password" />
             {err && <p className="error">{err}</p>}
             <button className="btn btn-primary" disabled={loading}>
               {loading ? "Connexion..." : "Se connecter →"}
             </button>
           </form>
+          <div className="auth-divider" aria-hidden="true">
+            <span>ou</span>
+          </div>
+          <GoogleLoginButton />
           <div className="auth-links">
             <Link href="/mot-de-passe-oublie">Mot de passe oublié ?</Link>
             <p>

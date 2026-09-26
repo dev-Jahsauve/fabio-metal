@@ -9,7 +9,7 @@ export const refundStatusEnum = pgEnum("refund_status", ["pending", "processed",
 export const notificationStatusEnum = pgEnum("notification_status", ["pending", "sent", "failed"]);
 
 export const users = pgTable("users", {
-  id: uuid("id").defaultRandom().primaryKey(), name: varchar("name", { length: 120 }).notNull(), email: varchar("email", { length: 190 }).notNull().unique(), phone: varchar("phone", { length: 30 }), passwordHash: text("password_hash").notNull(), role: roleEnum("role").default("customer").notNull(), emailVerifiedAt: timestamp("email_verified_at", { withTimezone: true }), createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(), updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(), lastLoginAt: timestamp("last_login_at", { withTimezone: true })
+  id: uuid("id").defaultRandom().primaryKey(), name: varchar("name", { length: 120 }).notNull(), email: varchar("email", { length: 190 }).notNull().unique(), phone: varchar("phone", { length: 30 }), passwordHash: text("password_hash").notNull(), role: roleEnum("role").default("customer").notNull(), emailVerifiedAt: timestamp("email_verified_at", { withTimezone: true }), avatarUrl: text("avatar_url"), googleSub: varchar("google_sub", { length: 120 }), createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(), updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(), lastLoginAt: timestamp("last_login_at", { withTimezone: true })
 }, (t) => [index("users_role_idx").on(t.role)]);
 
 export const passwordResetTokens = pgTable("password_reset_tokens", {

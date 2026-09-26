@@ -69,6 +69,9 @@ export default function RootLayout({
               >
                 Compte
               </Link>
+              <Link href="/parametres" className="btn btn-sm hide-mobile" aria-label="Paramètres">
+                ⚙
+              </Link>
               <ThemeSwitcher />
               <MobileNav />
             </div>
@@ -109,6 +112,8 @@ export default function RootLayout({
                 <Link href="/contact">Contact</Link>
                 <br />
                 <Link href="/compte">Compte</Link>
+                <br />
+                <Link href="/parametres">Paramètres</Link>
               </p>
             </div>
 

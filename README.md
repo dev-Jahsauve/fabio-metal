@@ -34,11 +34,11 @@ Version de référence complète basée sur l'architecture existante **Next.js +
 - marqueur `stock_released_at` pour empêcher une double restitution du stock
 
 ### Paiement
-- adaptateur CinetPay côté serveur
+- adaptateur NelsiusPay côté serveur (checkout hébergé : MTN MoMo, Orange Money, Wave, cartes)
 - transaction créée avec montant et devise issus de la commande serveur
 - retour navigateur jamais considéré comme preuve de paiement
 - vérification serveur auprès du prestataire
-- webhook signé
+- webhook re-vérifié côté serveur avant validation
 - identifiant d'événement unique pour l'idempotence
 - vérification montant/devise
 - états de paiement persistés
@@ -112,11 +112,8 @@ CRON_SECRET="secret long"
 Pour les paiements :
 
 ```env
-CINETPAY_APIKEY="..."
-CINETPAY_SITE_ID="..."
-CINETPAY_SECRET_KEY="..."
-CINETPAY_CHANNELS="ALL"
-CINETPAY_MODE="TEST"
+NELSIUSPAY_API_KEY="sk_test_..."
+NELSIUSPAY_MODE="TEST"
 ```
 
 Pour la récupération de mot de passe par email :
@@ -126,15 +123,17 @@ RESEND_API_KEY="..."
 RESEND_FROM_EMAIL="FABIOLE METAL <noreply@votre-domaine.tld>"
 ```
 
-## CinetPay
+## NelsiusPay
 
-Le paiement réel nécessite un compte marchand CinetPay, les identifiants marchands et une URL publique accessible par CinetPay.
+Le paiement réel (MTN MoMo, Orange Money, Wave, cartes Visa/Mastercard) nécessite un compte marchand NelsiusPay (https://nelsiuspay.com), la clé API secrète et une URL publique accessible par NelsiusPay pour le webhook.
 
-Webhook :
+Webhook (événements `payment.success` / `payment.failed`) :
 
 ```text
-/api/payments/cinetpay/webhook
+/api/payments/nelsiuspay/webhook
 ```
+
+À déclarer dans les paramètres marchands NelsiusPay. La doc ne spécifiant pas de signature HMAC, chaque événement est re-vérifié côté serveur (`GET /payments/{reference}`) avant validation.
 
 Retour navigateur :
 

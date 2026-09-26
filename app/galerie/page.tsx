@@ -10,12 +10,12 @@ export default async function Galerie() {
     gs = await db.select().from(gallery).where(eq(gallery.published, true)).orderBy(desc(gallery.createdAt));
   } catch {}
   const refs = [
-    { u: "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=800&q=80&auto=format&fit=crop", t: "Soudure de précision" },
-    { u: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&q=80&auto=format&fit=crop", t: "Portails & grilles" },
-    { u: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&q=80&auto=format&fit=crop", t: "Ouvrages & pose" },
-    { u: "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=800&q=80&auto=format&fit=crop", t: "Chantier métallique" },
-    { u: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=800&q=80&auto=format&fit=crop", t: "Étude sur mesure" },
-    { u: "https://upload.wikimedia.org/wikipedia/commons/3/3c/Iron_Gate_welding.jpg", t: "Portail forgé" },
+    { u: "/produits/portail-moderne-noir.jpg", t: "Portail moderne" },
+    { u: "/produits/porte-entree-volutes.jpg", t: "Porte d'entrée + volutes" },
+    { u: "/produits/porte-decorative-grille.jpg", t: "Porte décorative + grille" },
+    { u: "/produits/grille-fenetre-volutes.jpg", t: "Grille fenêtre à volutes" },
+    { u: "/produits/grille-fenetre-motif.jpg", t: "Grille fenêtre motif" },
+    { u: "/produits/barbecue-sur-pieds.jpg", t: "Barbecue sur pieds" },
   ];
   const items = gs.length
     ? gs.map((x) => ({ img: x.imageUrl, title: x.title, cat: x.category }))

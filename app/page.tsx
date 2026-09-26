@@ -16,34 +16,34 @@ const fallbackServices = [
 ];
 
 const HERO_THUMBS = [
-  "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=600&q=80&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&q=80&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=600&q=80&auto=format&fit=crop",
+  "/produits/portail-moderne-noir.jpg",
+  "/produits/porte-entree-volutes.jpg",
+  "/produits/grille-fenetre-volutes.jpg",
 ];
 
 const SHOWCASE = [
   {
-    img: "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=800&q=80&auto=format&fit=crop",
+    img: "/produits/porte-decorative-grille.jpg",
     title: "Soudure de précision",
     sub: "Assemblages solides et finitions soignées",
   },
   {
-    img: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=800&q=80&auto=format&fit=crop",
+    img: "/produits/panneau-porte-embouti.jpg",
     title: "Étude sur mesure",
     sub: "Dimensions et plans validés avec vous",
   },
   {
-    img: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&q=80&auto=format&fit=crop",
+    img: "/produits/barbecue-sur-pieds.jpg",
     title: "Pose et ouvrages",
     sub: "Portails, grilles et structures métalliques",
   },
 ];
 
 const GALLERY_FALLBACK = [
-  "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=800&q=80&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&q=80&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&q=80&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=800&q=80&auto=format&fit=crop",
+  "/produits/portail-moderne-noir.jpg",
+  "/produits/porte-entree-volutes.jpg",
+  "/produits/grille-fenetre-volutes.jpg",
+  "/produits/grille-fenetre-motif.jpg",
 ];
 
 export default async function Home() {
@@ -271,7 +271,7 @@ export default async function Home() {
             </p>
             <img
               className="about-img"
-              src="https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=1000&q=80&auto=format&fit=crop"
+              src="/produits/support-marmite.jpg"
               alt="Chantier et ouvrages métalliques"
               loading="lazy"
               style={{ marginTop: 18 }}
