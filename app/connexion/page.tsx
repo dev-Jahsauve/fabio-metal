@@ -54,26 +54,38 @@ function ConnexionForm() {
           <span className="eyebrow">Espace sécurisé</span>
           <h1>Connexion</h1>
           <p className="auth-sub">Accédez à votre compte client pour suivre vos commandes.</p>
-          <form className="form" onSubmit={go}>
+
+          <form className="form auth-form" onSubmit={go}>
             <label>
               Email
               <input required type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="vous@exemple.com" />
             </label>
-            <PasswordField value={password} onChange={setPassword} autoComplete="current-password" />
-            {err && <p className="error">{err}</p>}
-            <button className="btn btn-primary" disabled={loading}>
+            <div className="auth-field">
+              <div className="auth-password-head">
+                <span className="auth-password-label">Mot de passe</span>
+                <Link href="/mot-de-passe-oublie" className="auth-forgot">
+                  Mot de passe oublié ?
+                </Link>
+              </div>
+              <PasswordField value={password} onChange={setPassword} autoComplete="current-password" label="" />
+            </div>
+            {err && <p className="error auth-error">{err}</p>}
+            <button className="btn btn-primary auth-submit" disabled={loading}>
               {loading ? "Connexion..." : "Se connecter →"}
             </button>
           </form>
+
           <div className="auth-divider" aria-hidden="true">
-            <span>ou</span>
+            <span>ou continuer avec</span>
           </div>
+
           <GoogleLoginButton />
-          <div className="auth-links">
-            <Link href="/mot-de-passe-oublie">Mot de passe oublié ?</Link>
-            <p>
-              Pas encore de compte ? <Link href="/inscription">Créer un compte</Link>
-            </p>
+
+          <div className="auth-switch">
+            <p className="auth-switch-text">Pas encore de compte ?</p>
+            <Link href="/inscription" className="btn btn-outline auth-switch-btn">
+              Créer un compte
+            </Link>
           </div>
         </div>
       </div>

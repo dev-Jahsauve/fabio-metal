@@ -50,7 +50,7 @@ export default function Inscription() {
           <span className="eyebrow">Créer un compte</span>
           <h1>Votre espace client</h1>
           <p className="auth-sub">Gratuit, en moins d’une minute. Vos données restent privées.</p>
-          <form className="form" onSubmit={go}>
+          <form className="form auth-form" onSubmit={go}>
             <label>
               Nom
               <input required autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Votre nom complet" />
@@ -64,21 +64,25 @@ export default function Inscription() {
               <input autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+237..." />
             </label>
             <PasswordField label="Mot de passe" value={password} onChange={setPassword} autoComplete="new-password" placeholder="8 caractères minimum" minLength={8} />
-            {err && <p className="error">{err}</p>}
-            <button className="btn btn-primary" disabled={loading}>
+            {err && <p className="error auth-error">{err}</p>}
+            <button className="btn btn-primary auth-submit" disabled={loading}>
               {loading ? "Création..." : "Créer mon compte →"}
             </button>
+            <p className="auth-legal">
+              En créant un compte, vous acceptez nos <Link href="/contact">conditions d’utilisation</Link>.
+            </p>
           </form>
           <div className="auth-divider" aria-hidden="true">
-            <span>ou</span>
+            <span>ou continuer avec</span>
           </div>
           <Suspense>
             <GoogleLoginButton label="S'inscrire avec Google" />
           </Suspense>
-          <div className="auth-links">
-            <p>
-              Déjà inscrit ? <Link href="/connexion">Se connecter</Link>
-            </p>
+          <div className="auth-switch">
+            <p className="auth-switch-text">Déjà inscrit ?</p>
+            <Link href="/connexion" className="btn btn-outline auth-switch-btn">
+              Se connecter
+            </Link>
           </div>
         </div>
       </div>

@@ -54,20 +54,21 @@ function ResetForm() {
           <h1>Nouveau mot de passe</h1>
           {!token ? (
             <>
-              <p className="error">Lien invalide ou expiré. Refaites une demande.</p>
-              <div className="auth-links">
-                <p><Link href="/mot-de-passe-oublie">← Redemander un lien</Link></p>
+              <p className="error auth-error">Lien invalide ou expiré. Refaites une demande.</p>
+              <div className="auth-switch">
+                <p className="auth-switch-text">Besoin d’un nouveau lien ?</p>
+                <Link href="/mot-de-passe-oublie" className="btn btn-outline auth-switch-btn">← Redemander un lien</Link>
               </div>
             </>
           ) : (
             <>
               <p className="auth-sub">Créez votre nouveau mot de passe ci-dessous.</p>
-              <form className="form" onSubmit={submit}>
+              <form className="form auth-form" onSubmit={submit}>
                 <PasswordField label="Nouveau mot de passe" value={password} onChange={setPassword} autoComplete="new-password" placeholder="8 caractères minimum" minLength={8} />
                 <PasswordField label="Confirmer" value={confirm} onChange={setConfirm} autoComplete="new-password" placeholder="Répétez le mot de passe" minLength={8} />
-                {err && <p className="error">{err}</p>}
+                {err && <p className="error auth-error">{err}</p>}
                 {msg && <p className="success">{msg}</p>}
-                <button className="btn btn-primary" disabled={busy || !token}>
+                <button className="btn btn-primary auth-submit" disabled={busy || !token}>
                   {busy ? "Modification..." : "Modifier le mot de passe →"}
                 </button>
               </form>

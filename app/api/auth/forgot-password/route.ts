@@ -12,18 +12,20 @@ export async function POST(req: Request) {
   const parsed = z.object({ email: z.email().transform(v => v.toLowerCase()) }).safeParse(await req.json());
   if (!parsed.success) return NextResponse.json({ error: "Adresse email invalide" }, { status: 400 });
   const [user] = await db.select({ id: users.id, name: users.name, email: users.email }).from(users).where(eq(users.email, parsed.data.email)).limit(1);
-  if (!user) return NextResponse.json({ ok: true, message: "Si un compte existe pour cette adresse, un lien de réinitialisation sera envoyé." });
+  // Indique au front si l'envoi email est configuré (sans révéler si le compte existe).
+  const emailAvailable = Boolean(process.env.RESEND_API_KEY && process.env.RESEND_FROM_EMAIL);
+  if (!user) return NextResponse.json({ ok: true, emailAvailable, message: "Si un compte existe pour cette adresse, un lien de réinitialisation sera envoyé." });
   const token = await createPasswordReset(user.id);
   try {
     const result = await sendPasswordResetEmail(user.email, user.name, token);
-    const body: Record<string, unknown> = { ok: true, message: "Si un compte existe pour cette adresse, un lien de réinitialisation sera envoyé." };
+    const body: Record<string, unknown> = { ok: true, emailAvailable, emailSent: result.sent, message: "Si un compte existe pour cette adresse, un lien de réinitialisation sera envoyé." };
     if (process.env.NODE_ENV !== "production" && !result.sent) body.devResetUrl = result.url;
     return NextResponse.json(body);
   } catch (e) {
     console.error(e);
     // Hors production, on expose le lien même si l'envoi email échoue
     // (ex : domaine expéditeur non vérifié) pour ne jamais bloquer les tests.
-    const body: Record<string, unknown> = { ok: true, message: "Si un compte existe pour cette adresse, un lien de réinitialisation sera envoyé." };
+    const body: Record<string, unknown> = { ok: true, emailAvailable, emailSent: false, message: "Si un compte existe pour cette adresse, un lien de réinitialisation sera envoyé." };
     if (process.env.NODE_ENV !== "production") {
       const { getAppUrl } = await import("@/lib/utils");
       body.devResetUrl = `${getAppUrl()}/reinitialiser-mot-de-passe?token=${encodeURIComponent(token)}`;
