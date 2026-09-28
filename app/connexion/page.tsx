@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import PasswordField from "@/components/PasswordField";
 import GoogleLoginButton from "@/components/GoogleLoginButton";
+import { safeNextPath } from "@/lib/safe-redirect";
 
 export const dynamic = "force-dynamic";
 
@@ -32,8 +33,8 @@ function ConnexionForm() {
         setErr(j.error || "Connexion impossible");
         return;
       }
-      const next = params.get("next");
-      r.push(next || (j.role === "admin" ? "/admin" : "/compte"));
+      const next = safeNextPath(params.get("next"), j.role === "admin" ? "/admin" : "/compte");
+      r.push(next);
       r.refresh();
     } finally {
       setLoading(false);

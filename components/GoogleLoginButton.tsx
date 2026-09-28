@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { safeNextPath } from "@/lib/safe-redirect";
 
 declare global {
   interface Window {
@@ -50,8 +51,8 @@ export default function GoogleLoginButton({ label = "Continuer avec Google" }: {
               setErr(j.error || "Connexion Google impossible");
               return;
             }
-            const next = params.get("next");
-            router.push(next || (j.role === "admin" ? "/admin" : "/compte"));
+            const next = safeNextPath(params.get("next"), j.role === "admin" ? "/admin" : "/compte");
+            router.push(next);
             router.refresh();
           } catch {
             setErr("Connexion Google impossible. Vérifiez votre connexion.");
