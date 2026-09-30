@@ -2,18 +2,49 @@ import "./globals.css";
 import Link from "next/link";
 import CartButton from "@/components/CartButton";
 import MobileNav from "@/components/MobileNav";
+import SearchBox from "@/components/SearchBox";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
+import { BRAND, CONTACT, FEATURES } from "@/lib/site";
+import { getAppUrl } from "@/lib/utils";
+
+const APP_URL = getAppUrl();
 
 export const metadata = {
-  title: "FABIOLE METAL — Métallerie & fabrication sur mesure",
-  description:
-    "Portails, portes, fenêtres, mobilier métallique et réalisations personnalisées.",
+  metadataBase: new URL(APP_URL),
+  title: {
+    default: `${BRAND.name} — Boutique en ligne`,
+    template: `%s — ${BRAND.name}`,
+  },
+  description: `Catalogue ${BRAND.name} : articles en stock et réalisations sur devis. Commande en ligne et paiement sécurisé.`,
+  openGraph: {
+    type: "website",
+    locale: "fr_FR",
+    siteName: BRAND.name,
+    title: `${BRAND.name} — Boutique en ligne`,
+    description: `Articles en stock et réalisations sur devis. Commande en ligne et paiement sécurisé.`,
+    images: [{ url: "/og-cover.jpg", width: 1200, height: 630, alt: BRAND.name }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${BRAND.name} — Boutique en ligne`,
+    description: `Articles en stock et réalisations sur devis.`,
+    images: ["/og-cover.jpg"],
+  },
 };
 
 export const viewport = {
   width: "device-width",
   initialScale: 1,
 };
+
+function AccountIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </svg>
+  );
+}
 
 export default function RootLayout({
   children,
@@ -31,46 +62,42 @@ export default function RootLayout({
       </head>
       <body>
         <div className="topbar">
-          <strong>Atelier Bojongo</strong>&nbsp;— Portails · Portes · Mobilier sur
-          mesure — Devis rapide sur WhatsApp
+          <strong>{CONTACT.city || BRAND.baseline}</strong>&nbsp;— Catalogue en ligne — Réponse rapide sur WhatsApp
         </div>
         <header className="nav">
           <div className="container navin">
-            <Link href="/" className="logo" aria-label="FABIOLE METAL — Accueil">
+            <Link href="/" className="logo" aria-label={`${BRAND.name} — Accueil`}>
               <span className="logo-mark" aria-hidden="true">
-                FM
+                {BRAND.short}
               </span>
               <span className="logo-text">
-                <span>FABIOLE METAL</span>
-                <small>Atelier · Bojongo</small>
+                <span>{BRAND.name}</span>
+                <small>{BRAND.baseline}</small>
               </span>
             </Link>
 
             <nav className="nav-links" aria-label="Navigation principale">
               <Link href="/">Accueil</Link>
-              <Link href="/services">Services</Link>
               <Link href="/boutique">Boutique</Link>
-              <Link href="/galerie">Galerie</Link>
+              {FEATURES.services && <Link href="/services">Services</Link>}
+              {FEATURES.gallery && <Link href="/galerie">Galerie</Link>}
               <Link href="/contact">Contact</Link>
             </nav>
 
             <div className="nav-actions">
-              <Link
-                href="/contact"
-                className="btn btn-primary btn-sm nav-cta"
-              >
-                Demander un devis
-              </Link>
+              {FEATURES.search && (
+                <div className="hide-mobile">
+                  <SearchBox />
+                </div>
+              )}
               <CartButton />
               <Link
                 href="/compte"
-                className="btn btn-sm hide-mobile"
+                className="btn btn-sm btn-icon"
                 aria-label="Mon compte"
+                title="Mon compte"
               >
-                Compte
-              </Link>
-              <Link href="/parametres" className="btn btn-sm hide-mobile" aria-label="Paramètres">
-                ⚙
+                <AccountIcon />
               </Link>
               <ThemeSwitcher />
               <MobileNav />
@@ -84,65 +111,57 @@ export default function RootLayout({
           <div className="container footer-grid">
             <div>
               <Link href="/" className="logo" style={{ marginBottom: 12 }}>
-                <span className="logo-mark">FM</span>
+                <span className="logo-mark">{BRAND.short}</span>
                 <span className="logo-text">
-                  <span>FABIOLE METAL</span>
-                  <small>Atelier · Bojongo</small>
+                  <span>{BRAND.name}</span>
+                  <small>{BRAND.baseline}</small>
                 </span>
               </Link>
               <p>
-                Fabrication métallique sur mesure, soudure et mobilier en fer.
-                Portails, portes, fenêtres et réalisations personnalisées.
-              </p>
-              <div className="trust-bar">
-                <span className="trust-pill">
-                  <i /> Sur mesure
-                </span>
-                <span className="trust-pill blue">
-                  <i /> Atelier local
-                </span>
-              </div>
-            </div>
-
-            <div>
-              <b>Atelier</b>
-              <p>
-                <Link href="/a-propos">À propos</Link>
-                <br />
-                <Link href="/contact">Contact</Link>
-                <br />
-                <Link href="/compte">Compte</Link>
-                <br />
-                <Link href="/parametres">Paramètres</Link>
+                Articles en stock et réalisations sur devis, commandables en
+                ligne avec paiement sécurisé.
               </p>
             </div>
 
             <div>
-              <b>Catalogue</b>
+              <b>Boutique</b>
               <p>
-                <Link href="/services">Services</Link>
+                <Link href="/boutique">Catalogue</Link>
                 <br />
-                <Link href="/boutique">Boutique</Link>
-                <br />
-                <Link href="/galerie">Galerie</Link>
-                <br />
+                {FEATURES.services && (<><Link href="/services">Services</Link><br /></>)}
+                {FEATURES.gallery && (<><Link href="/galerie">Galerie</Link><br /></>)}
                 <Link href="/panier">Panier</Link>
+                <br />
+                <Link href="/contact">Demander un devis</Link>
+              </p>
+            </div>
+
+            <div>
+              <b>Aide</b>
+              <p>
+                <Link href="/cgv">Conditions de vente</Link>
+                <br />
+                <Link href="/retours">Retours & remboursements</Link>
+                <br />
+                <Link href="/confidentialite">Confidentialité</Link>
+                <br />
+                <Link href="/a-propos">À propos</Link>
               </p>
             </div>
 
             <div>
               <b>Contact</b>
               <p>
-                Face à la mairie de Bojongo
+                {CONTACT.address}
                 <br />
-                Tél / WhatsApp : +237 698 30 87 80
+                Tél / WhatsApp : {CONTACT.phone}
               </p>
               <Link
                 href="/contact"
                 className="btn btn-primary btn-sm"
                 style={{ marginTop: 10 }}
               >
-                Demander un devis
+                Nous contacter
               </Link>
             </div>
           </div>

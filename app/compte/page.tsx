@@ -48,7 +48,7 @@ export default async function Compte() {
             Mon panier
           </Link>
           <Link className="btn" href="/parametres">
-            ⚙ Paramètres / Profil
+            Paramètres / Profil
           </Link>
           <LogoutButton />
         </div>
@@ -116,13 +116,16 @@ export default async function Compte() {
             )}
           </div>
         </section>
-        {u.role === "admin" && (
-          <div style={{ marginTop: 25 }}>
+        <div className="actions" style={{ marginTop: 25 }}>
+          <Link className="btn" href="/parametres">
+            Paramètres du compte
+          </Link>
+          {u.role === "admin" && (
             <Link className="btn btn-gold" href="/admin">
-              Ouvrir le dashboard
+              Ouvrir l’administration
             </Link>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </main>
   );

@@ -4,23 +4,26 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import SearchBox from "@/components/SearchBox";
+import { BRAND, FEATURES } from "@/lib/site";
 
-const LINKS = [
+function Icon({ children }: { children: React.ReactNode }) {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      {children}
+    </svg>
+  );
+}
+
+const ALL_LINKS = [
   {
+    key: "home",
     label: "Accueil",
     href: "/",
-    icon: (
-      <path d="m3 10 9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z" />
-    ),
+    icon: <path d="m3 10 9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z" />,
   },
   {
-    label: "Services",
-    href: "/services",
-    icon: (
-      <path d="M14.7 6.3a4.5 4.5 0 0 0-6 6L3 18l3 3 5.7-5.7a4.5 4.5 0 0 0 6-6L14 13l-3-3Z" />
-    ),
-  },
-  {
+    key: "shop",
     label: "Boutique",
     href: "/boutique",
     icon: (
@@ -32,6 +35,13 @@ const LINKS = [
     ),
   },
   {
+    key: "services",
+    label: "Services",
+    href: "/services",
+    icon: <path d="M14.7 6.3a4.5 4.5 0 0 0-6 6L3 18l3 3 5.7-5.7a4.5 4.5 0 0 0 6-6L14 13l-3-3Z" />,
+  },
+  {
+    key: "gallery",
     label: "Galerie",
     href: "/galerie",
     icon: (
@@ -43,14 +53,14 @@ const LINKS = [
     ),
   },
   {
+    key: "contact",
     label: "Contact",
     href: "/contact",
-    icon: (
-      <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.7a2 2 0 0 1-.4 2.1L8.1 9.7a16 16 0 0 0 6 6l1.2-1.2a2 2 0 0 1 2.1-.4c.9.3 1.8.5 2.7.6a2 2 0 0 1 1.9 2Z" />
-    ),
+    icon: <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.7a2 2 0 0 1-.4 2.1L8.1 9.7a16 16 0 0 0 6 6l1.2-1.2a2 2 0 0 1 2.1-.4c.9.3 1.8.5 2.7.6a2 2 0 0 1 1.9 2Z" />,
   },
   {
-    label: "Compte",
+    key: "account",
+    label: "Mon compte",
     href: "/compte",
     icon: (
       <>
@@ -59,17 +69,13 @@ const LINKS = [
       </>
     ),
   },
-  {
-    label: "Paramètres",
-    href: "/parametres",
-    icon: (
-      <>
-        <circle cx="12" cy="12" r="3" />
-        <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
-      </>
-    ),
-  },
 ];
+
+const LINKS = ALL_LINKS.filter((l) => {
+  if (l.key === "services") return FEATURES.services;
+  if (l.key === "gallery") return FEATURES.gallery;
+  return true;
+});
 
 export default function MobileNav() {
   const [open, setOpen] = useState(false);
@@ -149,9 +155,9 @@ export default function MobileNav() {
                 <div className="nav-drawer-head nav-drawer-head--minimal">
                   <span className="nav-drawer-brand">
                     <span className="logo-mark nav-drawer-logo" aria-hidden="true">
-                      FM
+                      {BRAND.short}
                     </span>
-                    <strong className="nav-drawer-title">FABIOLE METAL</strong>
+                    <strong className="nav-drawer-title">{BRAND.name}</strong>
                   </span>
                   <button
                     ref={closeBtnRef}
@@ -172,27 +178,33 @@ export default function MobileNav() {
                     className="nav-drawer-top-login"
                     onClick={close}
                   >
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <Icon>
                       <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                       <circle cx="12" cy="7" r="4" />
-                    </svg>
+                    </Icon>
                     Connexion
                   </Link>
                   <Link
-                    href="/parametres"
+                    href="/panier"
                     className="nav-drawer-top-login"
                     onClick={close}
                     style={{ marginTop: 8 }}
                   >
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <circle cx="12" cy="12" r="3" />
-                      <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
-                    </svg>
-                    Paramètres
+                    <Icon>
+                      <path d="M6 7h15l-1.6 7.2a2 2 0 0 1-2 1.6H8.7a2 2 0 0 1-2-1.6L4.2 3.9A1 1 0 0 0 3.2 3H1.5" />
+                      <circle cx="9.5" cy="20.5" r="1.3" />
+                      <circle cx="17.5" cy="20.5" r="1.3" />
+                    </Icon>
+                    Mon panier
                   </Link>
                 </div>
 
                 <div className="nav-drawer-scroll">
+                  {FEATURES.search && (
+                    <div className="nav-drawer-search">
+                      <SearchBox id="recherche-mobile" />
+                    </div>
+                  )}
                   <p className="nav-drawer-label" aria-hidden="true">Menu</p>
                   <nav className="nav-drawer-links" aria-label="Navigation mobile">
                     {LINKS.map((l) => (
@@ -204,9 +216,7 @@ export default function MobileNav() {
                         className={isActive(l.href) ? "is-active" : undefined}
                       >
                         <span className="nav-drawer-link-main">
-                          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                            {l.icon}
-                          </svg>
+                          <Icon>{l.icon}</Icon>
                           <span>{l.label}</span>
                         </span>
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

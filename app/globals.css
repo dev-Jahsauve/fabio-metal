@@ -356,9 +356,11 @@ h3 {
   position: relative;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   height: 42px;
-  padding: 0 14px 0 11px;
+  min-width: 42px;
+  padding: 0 12px;
   border-radius: 13px;
   border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
   background: linear-gradient(135deg, var(--accent), var(--accent-hover) 60%, #0e4c9c);
@@ -673,61 +675,45 @@ h3 {
   flex-wrap: wrap;
   margin-top: 20px;
 }
-.hero-media {
-  display: grid;
-  gap: 12px;
-  min-width: 0;
-}
-.hero-img {
-  height: min(440px, 62vw);
-  min-height: 260px;
-  border-radius: 20px;
-  border: 1px solid var(--line);
-  background: var(--hero-img) center/cover no-repeat, var(--panel2);
+/* ===== Hero : vidéo d'atelier en fond, message au premier plan =====
+   Maintenable : une seule source (HERO_VIDEO dans app/page.tsx),
+   le voile garde le texte lisible dans les 4 thèmes, et la vidéo se coupe
+   si l'utilisateur préfère réduire les animations. */
+.hero-banner {
   position: relative;
   overflow: hidden;
-  box-shadow: var(--shadow);
+  isolation: isolate;
+  border-bottom: 1px solid var(--line);
+  background: var(--hero-img) center/cover no-repeat, var(--panel2);
 }
-.hero-img::after {
-  content: "";
+.hero-video {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.42), transparent 55%);
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(1.5px) brightness(0.8) saturate(0.95);
+  transform: scale(1.04);
   pointer-events: none;
 }
-.hero-caption {
+.hero-veil {
   position: absolute;
+  inset: 0;
+  z-index: 1;
+  background-color: color-mix(in srgb, var(--bg) 68%, transparent);
+  pointer-events: none;
+}
+.hero-centered {
+  position: relative;
   z-index: 2;
-  bottom: 14px;
-  left: 14px;
-  right: 14px;
-  background-color: color-mix(in srgb, var(--panel) 92%, transparent);
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 14px 16px;
-  backdrop-filter: blur(8px);
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 880px;
 }
-.hero-caption strong {
-  font-size: 1.02rem;
-  display: block;
-}
-.hero-caption span {
-  display: block;
-  color: var(--muted);
-  font-size: 0.84rem;
-  margin-top: 4px;
-}
-.hero-thumbs {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-}
-.hero-thumbs img {
-  width: 100%;
-  height: clamp(72px, 12vw, 110px);
-  object-fit: cover;
-  border-radius: 12px;
-  border: 1px solid var(--line);
+@media (prefers-reduced-motion: reduce) {
+  .hero-video {
+    display: none;
+  }
 }
 
 /* ===== Pastilles confiance ===== */
@@ -1060,7 +1046,8 @@ h3 {
   overflow: hidden;
   background-color: var(--panel2);
 }
-.g-media img {
+.g-media img,
+.g-media video {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -1068,6 +1055,7 @@ h3 {
   border: 0;
   border-radius: 0;
   transition: transform 0.35s ease;
+  background-color: #000;
 }
 .g-card:hover .g-media img {
   transform: scale(1.06);
@@ -1129,6 +1117,79 @@ h3 {
 }
 .g-cta:hover {
   text-decoration: underline;
+}
+.g-badge-video {
+  position: absolute;
+  z-index: 3;
+  right: 10px;
+  top: 10px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #fff;
+  background: rgba(200, 30, 30, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  padding: 4px 10px;
+  border-radius: 999px;
+  backdrop-filter: blur(6px);
+}
+.g-media-video {
+  background-color: #000;
+}
+.g-media video {
+  object-position: center;
+  cursor: pointer;
+}
+.g-media video:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.g-card:hover .g-media video {
+  transform: none;
+}
+.filter-pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 16px 0 20px;
+}
+.filter-pills button {
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.filter-pills button.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.g-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.badge-new {
+  position: absolute;
+  z-index: 3;
+  right: 10px;
+  top: 10px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #fff;
+  background: #16803c;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  padding: 4px 10px;
+  border-radius: 999px;
 }
 /* Compat ancien markup galerie (img seules) */
 .gallery > img {
@@ -2248,9 +2309,6 @@ hr {
   .hero {
     padding: 28px 0;
   }
-  .hero-img {
-    height: min(300px, 72vw);
-  }
   .section {
     padding: 40px 0;
   }
@@ -2605,5 +2663,164 @@ hr {
   .gradient {
     color: #111;
     background: none;
+  }
+}
+
+/* ===== Template : recherche navbar, filtres liens, CGV, stepper commande ===== */
+.nav-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 7px 14px;
+  min-width: min(240px, 22vw);
+}
+.nav-search svg {
+  flex: none;
+  color: var(--muted);
+}
+.nav-search input {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.85rem;
+  width: 100%;
+  outline: none;
+}
+.nav-search input::placeholder {
+  color: var(--muted);
+}
+.btn-icon {
+  gap: 6px;
+}
+/* Écrans moyens : la recherche et les liens se compactent, sans rupture */
+@media (max-width: 1100px) {
+  .nav-search {
+    min-width: 150px;
+  }
+  .nav-links a {
+    padding: 9px 8px;
+  }
+}
+.filter-pills a {
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--muted);
+  text-decoration: none;
+  transition: all 0.18s;
+}
+.filter-pills a.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.filter-active {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 4px 0 14px;
+}
+.nav-drawer-search {
+  padding: 4px 0 12px;
+}
+.nav-drawer-search .nav-search {
+  min-width: 0;
+  width: 100%;
+}
+.cgv-check {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.cgv-check input {
+  margin-top: 4px;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+}
+.stepper {
+  list-style: none;
+  margin: 18px 0 20px;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+}
+.stepper li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  position: relative;
+}
+.stepper li::before {
+  content: "";
+  position: absolute;
+  top: 13px;
+  left: calc(-50% + 14px);
+  right: calc(50% + 14px);
+  height: 2px;
+  background: var(--line);
+}
+.stepper li:first-child::before {
+  display: none;
+}
+.step-dot {
+  width: 27px;
+  height: 27px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 0.78rem;
+  background: var(--panel);
+  border: 2px solid var(--line);
+  position: relative;
+  z-index: 1;
+}
+.stepper li.done {
+  color: var(--accent);
+}
+.stepper li.done .step-dot {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.stepper li.done::before {
+  background: var(--accent);
+}
+.stepper li.current {
+  color: inherit;
+}
+.stepper li.current .step-dot {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+}
+.order-alert {
+  margin: 16px 0 4px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--accent-soft);
+  font-weight: 600;
+}
+@media (max-width: 640px) {
+  .step-label {
+    display: none;
+  }
+  .stepper li.current .step-label {
+    display: block;
   }
 }

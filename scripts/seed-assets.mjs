@@ -27,8 +27,17 @@ try {
   `);
 
   // 2. Produits issus des photos reelles de l'atelier.
-  // Prix alignes sur le marche camerounais (portail grillage ~173k pose,
-  // porte blindee normalisee ~634k, porte acier ~69k — generateur CYPE Cameroun).
+  // Prix alignes sur le marche camerounais observe sur le web :
+  // - portail coulissant artisanal sur devis ~529 000 pose comprise, portail
+  //   grillage simple ~173 500 (CYPE Cameroun) : le grand portail tole
+  //   renforcee + lames + arcs decoratifs ~4 m reste premium mais sous 800 000 ;
+  // - porte acier simple ~69 000, porte entree epoxy ~356 000, bloc-porte
+  //   blinde ~634 000 (CYPE Cameroun) : nos portes 95 000-145 000 en ensemble
+  //   pose se placent au milieu de gamme artisanal ;
+  // - antivol fer forge 35 000-55 000 le m2 pose a Yaounde : nos grilles
+  //   22 000-28 000 restent attractives en prix direct atelier ;
+  // - barbecue import pliable 10 000-17 000 : notre grill soude sur pieds
+  //   avec etagere (35 000) se justifie par la robustesse et le sur-mesure.
   // Tous les prix sont des multiples de 5 (contrainte applicative).
   await client.query(`
     INSERT INTO products
@@ -37,8 +46,8 @@ try {
       ((SELECT id FROM categories WHERE slug='portails-clotures'),
        'FM-PORT-001', 'Portail moderne tole + lames — sur mesure',
        'portail-moderne-tole-noir',
-       'Grand portail en tole renforcee avec lames horizontales et arcs decoratifs, fabrication de l''atelier Bojongo. Dimensions et motorisation sur devis. Prix indicatif pour ~4 m pose comprise.',
-       850000, 789000, '/produits/portail-moderne-noir.jpg', 2, true, true),
+        'Grand portail en tole renforcee avec lames horizontales et arcs decoratifs, fabrication de l''atelier Bojongo. Dimensions et motorisation sur devis. Prix indicatif pour ~4 m pose comprise.',
+        790000, 745000, '/produits/portail-moderne-noir.jpg', 2, true, true),
       ((SELECT id FROM categories WHERE slug='portes-metalliques'),
        'FM-PORT-002', 'Porte d''entree fer forge + grille fenetre',
        'porte-entree-fer-forge-volutes',
@@ -83,7 +92,18 @@ try {
        'FM-FEN-002', 'Grille de fenetre motif geometrique sur mesure',
        'grille-fenetre-motif-geometrique',
        'Grille a motif geometrique soudee en atelier, finition brute a peindre ou peinture au choix. Motif et dimensions personnalisables.',
-       22000, NULL, '/produits/grille-fenetre-motif.jpg', 8, true, true)
+       22000, NULL, '/produits/grille-fenetre-motif.jpg', 8, true, true),
+      -- Nouveaux medias du 30/09/2026 : 2.jpeg = porte 2 battants (PRODUIT), 3.jpeg = coffre moto (PRODUIT + vitrine livraison)
+      ((SELECT id FROM categories WHERE slug='portes-metalliques'),
+       'FM-PORT-005', 'Porte metallique 2 battants + motifs emboutis',
+       'porte-metallique-2-battants-motifs',
+       'Porte 2 battants en fer peint avec barreaux, poignee et 2 motifs emboutis. Serrure incluse, pose par l''atelier.',
+       95000, 89000, '/produits/porte-metallique-2-battants.jpg', 3, false, true),
+      ((SELECT id FROM categories WHERE slug='accessoires-metalliques'),
+       'FM-ACC-002', 'Coffre / malle de livraison moto en tole',
+       'coffre-malle-livraison-moto',
+       'Malle arriere moto en tole peinte avec serrure, fabriquee a l''atelier. Dimensions adaptables selon la moto.',
+       28000, NULL, '/produits/coffre-livraison-moto.jpg', 5, true, true)
     ON CONFLICT (slug) DO UPDATE SET
       name = EXCLUDED.name,
       description = EXCLUDED.description,
@@ -109,7 +129,13 @@ try {
       ('Patere murale','Accessoires','/produits/patere-murale.jpg','Petite ferronnerie : crochet mural en fer.', true),
       ('Plateau renforce sur mesure','Atelier','/produits/plateau-rond-renforce.jpg','Disque renforce : base, couvercle ou fond de cuve.', true),
       ('Grille fenetre a volutes','Fenetres','/produits/grille-fenetre-volutes.jpg','Grille de protection peinte, volutes et rosaces forgees.', true),
-      ('Grille fenetre motif geometrique','Fenetres','/produits/grille-fenetre-motif.jpg','Grille brute en cours de fabrication, motif sur mesure.', true)
+      ('Grille fenetre motif geometrique','Fenetres','/produits/grille-fenetre-motif.jpg','Grille brute en cours de fabrication, motif sur mesure.', true),
+      -- 5 nouveaux medias : 2 produits + 1 chantier + 2 videos d'atelier
+      ('Porte metallique 2 battants + motifs','Portes','/produits/porte-metallique-2-battants.jpg','Porte 2 battants peinte, barreaux + motifs emboutis.', true),
+      ('Coffre de livraison moto en tole','Livraison','/produits/coffre-livraison-moto.jpg','Malle arriere moto fabriquee a l''atelier.', true),
+      ('Ossature / kiosque metallique en chantier','Structures','/produits/ossature-kiosque-metallique.jpg','Charpente metallique en cours d''assemblage, sur devis.', true),
+      ('Atelier en action — video 1','Atelier','/produits/atelier-fabrication-1.mp4','Demonstration du savoir-faire a l''atelier.', true),
+      ('Atelier en action — video 2','Atelier','/produits/atelier-fabrication-2.mp4','Demonstration du savoir-faire a l''atelier.', true)
     ) AS v(title, category, image_url, description, published)
     WHERE NOT EXISTS (SELECT 1 FROM gallery g WHERE g.image_url = v.image_url);
   `);
@@ -120,6 +146,15 @@ try {
   const { rows: gal } = await client.query(
     `SELECT COUNT(*)::int AS n FROM gallery WHERE published = true`
   );
+  // 1.jpeg = ossature/kiosque : SERVICE sur devis (pas de stock), pas un produit.
+  // + les 2 services manquants pour que chaque categorie produit ait son service.
+  await client.query(`
+    INSERT INTO services (title, slug, description, icon, published, sort_order)
+    VALUES ('Structures & kiosques metalliques','structures-kiosques-metalliques','Ossatures, kiosques, hangars et locaux metalliques assembles sur site. Etude, fabrication et montage sur devis.','STR', true, 6),
+    ('Barbecue & foyer','cuisine-foyer','Barbecues sur pieds, supports marmite et plateaux renforces fabriques a l''atelier.','FOY', true, 7),
+    ('Accessoires metalliques','accessoires-metalliques','Pateres murales, coffres de livraison moto et petits accessoires en fer forge ou en tole.','ACC', true, 8)
+    ON CONFLICT (slug) DO NOTHING;
+  `);
   console.log(`Produits publies : ${prods.length}`);
   for (const p of prods) console.log(` - ${p.slug} : ${p.price_xaf} FCFA` + (p.promo_price_xaf ? ` (promo ${p.promo_price_xaf})` : ""));
   console.log(`Photos galerie publiees : ${gal[0].n}`);

@@ -1,12 +1,29 @@
 "use client";
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { waLink } from '@/lib/utils';
+import { BRAND, CONTACT } from '@/lib/site';
 
 // Formulaire de devis : enregistré en base (/api/contact) ET notifié par email via Formspree.
 const FORMSPREE_ACTION = "https://formspree.io/f/xzezaweo";
 
-export default function Contact() {
-  const [f, setF] = useState({ name: '', phone: '', subject: 'Portail', message: '' });
+// Sujets de démonstration (contexte actuel). Le paramètre d'URL ?objet=
+// pré-remplit le formulaire depuis les boutons « Demander un devis » :
+// sujet reconnu => sélectionné, sinon « Autre » + message pré-rempli.
+const SUBJECTS = ['Portail', 'Porte', 'Fenêtre / grille', 'Salle à manger', 'Porte-rideaux', 'Autre'];
+
+function initialFromObjet(objet: string) {
+  const o = (objet || '').trim().slice(0, 300);
+  if (!o) return { subject: 'Portail', message: '' };
+  const found = SUBJECTS.find((s) => o.toLowerCase().includes(s.split(' ')[0].toLowerCase()));
+  if (found) return { subject: found, message: '' };
+  return { subject: 'Autre', message: o };
+}
+
+function ContactForm() {
+  const searchParams = useSearchParams();
+  const [prefilled] = useState(() => initialFromObjet(searchParams.get('objet') || ''));
+  const [f, setF] = useState({ name: '', phone: '', subject: prefilled.subject, message: prefilled.message });
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [msg, setMsg] = useState('');
   const [busy, setBusy] = useState(false);
@@ -44,7 +61,7 @@ export default function Contact() {
           telephone: f.phone,
           sujet: f.subject,
           message: f.message,
-          _subject: `Devis FABIOLE METAL — ${f.subject} (${f.name})`,
+          _subject: `Devis ${BRAND.name} — ${f.subject} (${f.name})`,
         }),
       });
       if (!fp.ok) throw new Error('formspree');
@@ -63,14 +80,14 @@ export default function Contact() {
         <div>
           <span className="eyebrow">Contact</span>
           <h1>
-            Parlons de votre <span className="gradient">ouvrage.</span>
+            Parlons de votre <span className="gradient">projet.</span>
           </h1>
           <p style={{ color: "var(--muted)" }}>
-            Face à la mairie de Bojongo
+            {CONTACT.address}
             <br />
-            +237 698 30 87 80
+            {CONTACT.phone}
           </p>
-          <a className="btn btn-gold" href={waLink("Bonjour FABIOLE METAL, je souhaite demander un devis.")}>
+          <a className="btn btn-gold" href={waLink(`Bonjour ${BRAND.name}, je souhaite demander un devis.`)}>
             WhatsApp
           </a>
         </div>
@@ -80,7 +97,7 @@ export default function Contact() {
               <span className="notice-icon" aria-hidden="true">✓</span>
               <div>
                 <strong>Demande envoyée !</strong>
-                <p>{msg} FABIOLE METAL vous recontactera très vite pour votre devis.</p>
+                <p>{msg} {BRAND.name} vous recontactera très vite pour votre devis.</p>
                 <button type="button" className="btn btn-outline btn-sm" onClick={() => { setStatus('idle'); setMsg(''); }}>
                   Faire une autre demande
                 </button>
@@ -97,14 +114,9 @@ export default function Contact() {
               <input required value={f.phone} onChange={e => setF({ ...f, phone: e.target.value })} placeholder="+237..." />
             </label>
             <label>
-              Type d’ouvrage
+              Sujet
               <select value={f.subject} onChange={e => setF({ ...f, subject: e.target.value })}>
-                <option>Portail</option>
-                <option>Porte</option>
-                <option>Fenêtre / grille</option>
-                <option>Salle à manger</option>
-                <option>Porte-rideaux</option>
-                <option>Autre</option>
+                {SUBJECTS.map((s) => <option key={s}>{s}</option>)}
               </select>
             </label>
             <label>
@@ -128,5 +140,13 @@ export default function Contact() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function Contact() {
+  return (
+    <Suspense fallback={<main className="section"><div className="container"><div className="card">Chargement…</div></div></main>}>
+      <ContactForm />
+    </Suspense>
   );
 }

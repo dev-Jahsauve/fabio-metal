@@ -3,8 +3,13 @@ import { db } from "@/lib/db";
 import { gallery } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { waLink } from "@/lib/utils";
+import GalleryGrid from "@/components/GalleryGrid";
+import { notFound } from "next/navigation";
+import { FEATURES } from "@/lib/site";
 
 export default async function Galerie() {
+  // Module optionnel du template.
+  if (!FEATURES.gallery) return notFound();
   let gs: any[] = [];
   try {
     gs = await db.select().from(gallery).where(eq(gallery.published, true)).orderBy(desc(gallery.createdAt));
@@ -18,8 +23,8 @@ export default async function Galerie() {
     { u: "/produits/barbecue-sur-pieds.jpg", t: "Barbecue sur pieds" },
   ];
   const items = gs.length
-    ? gs.map((x) => ({ img: x.imageUrl, title: x.title, cat: x.category }))
-    : refs.map((r) => ({ img: r.u, title: r.t, cat: "Atelier" }));
+    ? gs.map((x) => ({ img: x.imageUrl, title: x.title, cat: x.category || "Atelier", isVideo: String(x.imageUrl || "").toLowerCase().endsWith(".mp4") }))
+    : refs.map((r) => ({ img: r.u, title: r.t, cat: "Atelier", isVideo: false }));
   return (
     <main className="section">
       <div className="container">
@@ -29,29 +34,10 @@ export default async function Galerie() {
             Réalisations de <span className="gradient">l’atelier.</span>
           </h1>
           <p>
-            Photos réelles des ouvrages fabriqués et posés par FABIOLE METAL à Bojongo. {items.length} réalisation{items.length > 1 ? "s" : ""}.
+            Photos réelles des ouvrages fabriqués et posés par FABIOLE METAL à Bojongo. {items.length} réalisation{items.length > 1 ? "s" : ""} : objets en boutique, chantier sur devis et vidéos d’atelier.
           </p>
         </div>
-        <div className="gallery">
-          {items.map((x, i) => (
-            <figure className="g-card" key={i}>
-              <div className="g-media">
-                <img src={x.img} alt={x.title} loading="lazy" />
-                {x.cat && <span className="g-cat">{x.cat}</span>}
-              </div>
-              <figcaption>
-                <strong title={x.title}>{x.title}</strong>
-                <span>{x.cat || "Fabrication sur mesure"}</span>
-                <Link
-                  className="g-cta"
-                  href={`/contact?objet=${encodeURIComponent("Modèle galerie : " + x.title)}`}
-                >
-                  Commander ce modèle →
-                </Link>
-              </figcaption>
-            </figure>
-          ))}
-        </div>
+        <GalleryGrid items={items} />
         <div className="actions" style={{ marginTop: 24 }}>
           <Link href="/boutique" className="btn btn-primary">
             Voir la boutique

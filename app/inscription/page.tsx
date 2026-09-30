@@ -69,7 +69,7 @@ export default function Inscription() {
               {loading ? "Création..." : "Créer mon compte →"}
             </button>
             <p className="auth-legal">
-              En créant un compte, vous acceptez nos <Link href="/contact">conditions d’utilisation</Link>.
+              En créant un compte, vous acceptez nos <Link href="/cgv">conditions générales de vente</Link> et notre <Link href="/confidentialite">politique de confidentialité</Link>.
             </p>
           </form>
           <div className="auth-divider" aria-hidden="true">

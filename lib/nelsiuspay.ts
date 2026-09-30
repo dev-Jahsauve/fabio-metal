@@ -1,11 +1,37 @@
+import crypto from "node:crypto";
 import { getAppUrl } from "@/lib/utils";
 
 const API_URL = "https://api.nelsiuspay.com/api/v1";
 
+/**
+ * Environnement de paiement EXPLICITE, lu depuis NELSIUSPAY_MODE.
+ * - "live" (ou "production") → argent réel, exige une clé sk_live_*.
+ * - toute autre valeur (défaut "test") → exige une clé sk_test_*.
+ *
+ * Garde-fou : une clé live est REFUSÉE en mode test et une clé test est
+ * REFUSÉE en mode live. Aucune transaction ne peut donc partir dans le
+ * mauvais environnement par erreur de configuration. NELSIUSPAY_MODE est
+ * réellement lu ici (initiation + vérification + webhook passent tous par
+ * `requiredConfig`), ce n'est pas une variable décorative.
+ */
+export function getNelsiusEnv(): "test" | "live" {
+  return process.env.NELSIUSPAY_MODE === "live" || process.env.NELSIUSPAY_MODE === "production"
+    ? "live"
+    : "test";
+}
+
 function requiredConfig() {
   const apiKey = process.env.NELSIUSPAY_API_KEY;
   if (!apiKey) throw new Error("PAYMENT_PROVIDER_NOT_CONFIGURED");
-  return { apiKey };
+  const env = getNelsiusEnv();
+  if (env === "live" && !apiKey.startsWith("sk_live_")) {
+    throw new Error("PAYMENT_WRONG_ENVIRONMENT");
+  }
+  if (env === "test" && !apiKey.startsWith("sk_test_")) {
+    // Une clé live en mode test = argent réel pendant les essais : interdit.
+    throw new Error("PAYMENT_WRONG_ENVIRONMENT");
+  }
+  return { apiKey, env };
 }
 
 /**
@@ -161,4 +187,22 @@ export function mapNelsiusStatus(status?: string) {
     default:
       return "processing" as const;
   }
+}
+
+/**
+ * Identifiant déterministe d'un résultat de vérification, partagé par
+ * webhook + refresh + cron pour dédupliquer via `paymentEvents.eventId`
+ * (contrainte unique existante, aucune nouvelle table).
+ * Mêmes entrées => même id ; statut ou montant différent => id différent.
+ */
+export function buildNelsiusEventId(
+  reference: string,
+  verified: { status: string; amount?: number; transactionCode?: string }
+) {
+  return crypto
+    .createHash("sha256")
+    .update(
+      ["nelsiuspay", reference, verified.transactionCode || "", verified.status, String(verified.amount ?? "")].join("|")
+    )
+    .digest("hex");
 }

@@ -153,7 +153,10 @@ En production, le cron :
 /api/jobs/reconcile-payments
 ```
 
-est exécuté toutes les 10 minutes via `vercel.json`. Il exige `CRON_SECRET`.
+est exécuté une fois par jour à 02h00 via `vercel.json` (limite du plan Hobby : 1 fois/jour).
+Pour une réconciliation plus fréquente (toutes les 10 minutes), ajoutez un cron
+externe qui appelle la même URL avec `Authorization: Bearer CRON_SECRET`.
+Il exige `CRON_SECRET` dans tous les cas.
 
 ## Images
 

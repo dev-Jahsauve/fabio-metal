@@ -9,6 +9,7 @@ import { errorResponse } from "@/lib/api";
 import { initiateNelsiusCheckout, getNelsiusPaymentLink } from "@/lib/nelsiuspay";
 import { restoreReservedStock } from "@/lib/order-service";
 import { getAppUrl, orderReference } from "@/lib/utils";
+import { BRAND } from "@/lib/site";
 
 const schema = z.object({
   items: z.array(z.object({ productId: z.string().uuid(), quantity: z.number().int().min(1).max(100) })).min(1).max(50),
@@ -17,17 +18,28 @@ const schema = z.object({
   address: z.object({ recipientName: z.string().min(2).max(120), phone: z.string().min(6).max(30), addressLine: z.string().min(4).max(500), city: z.string().min(2).max(100), region: z.string().max(100).optional() }).optional()
 }).superRefine((v, ctx) => { if (!v.addressId && !v.address) ctx.addIssue({ code: "custom", path: ["address"], message: "Adresse de livraison requise" }); });
 
+// Vide le panier sans jamais faire échouer la commande : un résidu de panier
+// se corrige tout seul, une commande perdue non.
+async function clearUserCartBestEffort(userId: string) {
+  try {
+    const [userCart] = await db.select({ id: carts.id }).from(carts).where(eq(carts.userId, userId)).limit(1);
+    if (userCart) await db.delete(cartItems).where(eq(cartItems.cartId, userCart.id));
+  } catch (e) { console.error("cart clear best-effort", e); }
+}
+
 export async function POST(req: Request) {
   let effectiveIdempotencyKey = "";
+  let effectiveUserId = "";
   try {
     const session = await requireUser();
+    effectiveUserId = session.userId;
     const parsed = schema.safeParse(await req.json()); if (!parsed.success) return NextResponse.json({ error: "Panier ou adresse invalides" }, { status: 400 });
     const input = parsed.data;
     const rawIdempotencyKey = req.headers.get("Idempotency-Key")?.trim() || crypto.randomUUID();
     const idempotencyKey = `${session.userId}:${rawIdempotencyKey}`.slice(0, 120);
     effectiveIdempotencyKey = idempotencyKey;
     const [existingOrder] = await db.select().from(orders).where(and(eq(orders.idempotencyKey, idempotencyKey), eq(orders.userId, session.userId))).limit(1);
-    if (existingOrder) { const [existingPayment] = await db.select().from(payments).where(eq(payments.orderId, existingOrder.id)).orderBy(sql`${payments.createdAt} DESC`).limit(1); return NextResponse.json({ orderId: existingOrder.id, reference: orderReference(existingOrder.id), paymentUrl: existingPayment?.paymentUrl || null, reused: true }); }
+    if (existingOrder) { const [existingPayment] = await db.select().from(payments).where(eq(payments.orderId, existingOrder.id)).orderBy(sql`${payments.createdAt} DESC`).limit(1); await clearUserCartBestEffort(session.userId); return NextResponse.json({ orderId: existingOrder.id, reference: orderReference(existingOrder.id), paymentUrl: existingPayment?.paymentUrl || null, reused: true }); }
     const quantities = new Map<string, number>(); for (const item of input.items) quantities.set(item.productId, (quantities.get(item.productId) || 0) + item.quantity);
     const ids = [...quantities.keys()];
 
@@ -35,6 +47,9 @@ export async function POST(req: Request) {
     const result = await db.transaction(async (tx) => {
       const found = await tx.select().from(products).where(and(inArray(products.id, ids), eq(products.published, true)));
       if (found.length !== ids.length) throw new Error("PRODUCT_UNAVAILABLE");
+      // Produits sur devis : jamais commandables directement (défense en
+      // profondeur, le panier les refuse déjà). Parcours demande de devis.
+      if (found.some((p) => p.isCustom)) throw new Error("QUOTE_REQUIRED");
       const rows: Array<{ product: any; quantity: number; unitPrice: number }> = [];
       for (const productId of ids) {
         const quantity = quantities.get(productId)!;
@@ -78,13 +93,15 @@ export async function POST(req: Request) {
 
       const [order] = await tx.insert(orders).values({ idempotencyKey, userId: session.userId, subtotalXaf: subtotal, deliveryFeeXaf: deliveryFee, discountXaf: 0, taxXaf: 0, currency: "XAF", totalXaf: total, customerNote: input.note, ...({ shippingRecipientName: addressSnapshot.recipientName, shippingPhone: addressSnapshot.phone, shippingAddressLine: addressSnapshot.addressLine, shippingCity: addressSnapshot.city, shippingRegion: addressSnapshot.region }) }).returning();
       await tx.insert(orderItems).values(rows.map(r => ({ orderId: order.id, productId: r.product.id, productNameSnapshot: r.product.name, skuSnapshot: r.product.sku, quantity: r.quantity, unitPriceXaf: r.unitPrice })));
-      const transactionId = `FM${order.id.replaceAll("-", "")}`;
+      const transactionId = `${BRAND.orderPrefix}${order.id.replaceAll("-", "")}`;
       const [payment] = await tx.insert(payments).values({ orderId: order.id, provider: "nelsiuspay", transactionId, amountXaf: total, currency: "XAF", status: "pending", expiresAt: new Date(Date.now() + 30 * 60_000) }).returning();
       await tx.insert(notifications).values({ userId: session.userId, orderId: order.id, type: "order_created", title: "Commande créée", message: `Votre commande ${orderReference(order.id)} est en attente de paiement.` });
       const adminsForOrder = await tx.select({ id: users.id }).from(users).where(eq(users.role, "admin"));
       if (adminsForOrder.length) await tx.insert(notifications).values(adminsForOrder.map(a => ({ userId: a.id, orderId: order.id, type: "new_order", title: "Nouvelle commande", message: `Une nouvelle commande ${orderReference(order.id)} attend un paiement.` })));
       await tx.insert(auditLogs).values({ actorUserId: session.userId, action: "order.created", entityType: "order", entityId: order.id, metadata: { totalXaf: total, itemCount: rows.length } });
-      const [userCart] = await tx.select({ id: carts.id }).from(carts).where(eq(carts.userId, session.userId)).limit(1); if (userCart) await tx.delete(cartItems).where(eq(cartItems.cartId, userCart.id));
+      // Le panier n'est vidé qu'après initialisation du paiement réussie
+      // (voir après `initiateNelsiusCheckout`) : en cas d'échec le client
+      // retrouve son panier intact au lieu de tout ressaisir.
       return { order, payment, rows };
     });
 
@@ -100,6 +117,7 @@ export async function POST(req: Request) {
         const staticLink = getNelsiusPaymentLink();
         if (staticLink) {
           await db.update(payments).set({ status: "pending", paymentUrl: staticLink, providerResponse: { mode: "static-link" }, updatedAt: new Date() }).where(eq(payments.id, result.payment.id));
+          await clearUserCartBestEffort(session.userId);
           return NextResponse.json({ orderId: result.order.id, reference: orderReference(result.order.id), paymentUrl: staticLink, manual: true });
         }
       }
@@ -115,17 +133,23 @@ export async function POST(req: Request) {
       await db.update(payments).set({ status: "processing", paymentUrl: gateway.paymentUrl, providerResponse: gateway.raw, updatedAt: new Date() }).where(eq(payments.id, result.payment.id));
     } catch (storageError) {
       console.error(storageError);
-      return NextResponse.json({ error: "La transaction de paiement a été créée, mais son enregistrement local est temporairement indisponible. Le webhook reste actif." }, { status: 503 });
+      // Détail technique (ne pas exposer) : enregistrement local indisponible, webhook actif.
+      return NextResponse.json({ error: "Paiement en ligne : Bientôt disponible." }, { status: 503 });
     }
+    await clearUserCartBestEffort(session.userId);
     return NextResponse.json({ orderId: result.order.id, reference: orderReference(result.order.id), paymentUrl: gateway.paymentUrl });
   } catch (e: any) {
     if (e?.message === "PRODUCT_UNAVAILABLE") return NextResponse.json({ error: "Un article du panier n'est plus disponible." }, { status: 409 });
+    if (e?.message === "QUOTE_REQUIRED") return NextResponse.json({ error: "Un article nécessite un devis et ne peut pas être commandé directement." }, { status: 400 });
     if (e?.message === "INSUFFICIENT_STOCK") return NextResponse.json({ error: "Stock insuffisant pour au moins un article." }, { status: 409 });
-    if (e?.message === "PAYMENT_AMOUNT_INVALID") return NextResponse.json({ error: "Le montant de commande n'est pas compatible avec le prestataire de paiement." }, { status: 400 });
+    if (e?.message === "PAYMENT_AMOUNT_INVALID") return NextResponse.json({ error: "Montant de commande invalide." }, { status: 400 });
     if (e?.message === "ADDRESS_NOT_FOUND") return NextResponse.json({ error: "Adresse introuvable." }, { status: 404 });
-    if (e?.message === "PAYMENT_PROVIDER_NOT_CONFIGURED") return NextResponse.json({ error: "Le paiement en ligne n'est pas encore configuré côté serveur." }, { status: 503 });
-    if (e?.message === "PAYMENT_PROVIDER_ERROR") return NextResponse.json({ error: "Le prestataire de paiement n'a pas pu initialiser la transaction." }, { status: 502 });
-    if (e?.code === "23505" && effectiveIdempotencyKey) { const [existing] = await db.select().from(orders).where(eq(orders.idempotencyKey, effectiveIdempotencyKey)).limit(1); if (existing) { const [payment] = await db.select().from(payments).where(eq(payments.orderId, existing.id)).orderBy(sql`${payments.createdAt} DESC`).limit(1); return NextResponse.json({ orderId: existing.id, reference: orderReference(existing.id), paymentUrl: payment?.paymentUrl || null, reused: true }); } }
+    // Détails techniques (ne pas exposer) : clé NelsiusPay manquante, incohérence
+    // test/live (ex : clé live en mode test) ou erreur prestataire.
+    if (e?.message === "PAYMENT_PROVIDER_NOT_CONFIGURED") return NextResponse.json({ error: "Paiement en ligne : Bientôt disponible." }, { status: 503 });
+    if (e?.message === "PAYMENT_WRONG_ENVIRONMENT") return NextResponse.json({ error: "Paiement en ligne : Bientôt disponible." }, { status: 503 });
+    if (e?.message === "PAYMENT_PROVIDER_ERROR") return NextResponse.json({ error: "Paiement en ligne : Bientôt disponible." }, { status: 502 });
+    if (e?.code === "23505" && effectiveIdempotencyKey) { const [existing] = await db.select().from(orders).where(eq(orders.idempotencyKey, effectiveIdempotencyKey)).limit(1); if (existing) { const [payment] = await db.select().from(payments).where(eq(payments.orderId, existing.id)).orderBy(sql`${payments.createdAt} DESC`).limit(1); await clearUserCartBestEffort(effectiveUserId); return NextResponse.json({ orderId: existing.id, reference: orderReference(existing.id), paymentUrl: payment?.paymentUrl || null, reused: true }); } }
     return errorResponse(e);
   }
 }

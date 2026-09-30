@@ -214,11 +214,12 @@ export default function CartView() {
             <div className="price">{formatXaf(total)}</div>
             <p>
               {items.length} article{items.length > 1 ? "s" : ""} · Frais de
-              livraison calculés au checkout.
+              livraison calculés à la commande.
+              {/* Détail technique (ne pas afficher) : calculés au checkout côté serveur. */}
             </p>
             <div className="actions">
               <Link className="btn btn-primary" href="/checkout">
-                Passer au checkout
+                Passer commande
               </Link>
               <Link className="btn" href="/boutique">
                 Continuer mes achats

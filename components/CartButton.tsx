@@ -67,7 +67,6 @@ export default function CartButton() {
           <path d="M9 10.5v3M12 10.5v3M15 10.5v3" opacity="0.55" strokeWidth="1.6" />
         </svg>
       </span>
-      <span className="cart-btn-label">Panier</span>
       {count > 0 && (
         <span className="cart-badge" aria-hidden="true">
           {count > 99 ? "99+" : count}

@@ -6,10 +6,17 @@ import { getSession, requireAdmin } from "@/lib/auth";
 import { eq, desc } from "drizzle-orm";
 import { errorResponse } from "@/lib/api";
 
+const isVideoUrl = (v: string) => v.split(/[?#]/)[0].toLowerCase().endsWith(".mp4");
+
+const imageUrlSchema = z.string().trim().min(1).max(2000).nullable().optional().refine(
+  (v) => v == null || v === "" || ((v.startsWith("/") || /^https?:\/\/.+/.test(v)) && !isVideoUrl(v)),
+  { message: "URL image invalide (utilisez /produits/... ou https://... ; les vidéos .mp4 vont dans la Galerie)" }
+);
+
 const productSchema = z.object({
   name: z.string().trim().min(2).max(160), slug: z.string().trim().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(180),
   description: z.string().max(5000).nullable().optional(), categoryId: z.string().uuid().nullable().optional(),
-  priceXaf: z.number().int().nonnegative(), promoPriceXaf: z.number().int().nonnegative().nullable().optional(), imageUrl: z.string().url().nullable().optional(),
+  priceXaf: z.number().int().nonnegative(), promoPriceXaf: z.number().int().nonnegative().nullable().optional(), imageUrl: imageUrlSchema,
   stock: z.number().int().nonnegative(), lowStockThreshold: z.number().int().nonnegative().max(100000).default(2), isCustom: z.boolean().default(true), published: z.boolean().default(true), sku: z.string().trim().max(80).nullable().optional()
 }).superRefine((v, ctx) => {
   if (v.promoPriceXaf != null && v.promoPriceXaf > v.priceXaf) ctx.addIssue({ code: "custom", path: ["promoPriceXaf"], message: "Le prix promotionnel ne peut pas dépasser le prix normal." });

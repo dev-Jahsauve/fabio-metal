@@ -22,10 +22,8 @@ export async function POST(req: Request) {
     } catch (e) {
       const msg = e instanceof Error ? e.message : "GOOGLE_TOKEN_INVALID";
       if (msg === "GOOGLE_CLIENT_ID_NOT_CONFIGURED") {
-        return NextResponse.json(
-          { error: "Connexion Google non configurée. Ajoutez GOOGLE_CLIENT_ID dans .env.local." },
-          { status: 501 }
-        );
+        // Détail technique (ne pas exposer) : ajouter GOOGLE_CLIENT_ID dans .env.local.
+        return NextResponse.json({ error: "Connexion Google : Bientôt disponible." }, { status: 501 });
       }
       return NextResponse.json({ error: "Connexion Google impossible. Réessayez." }, { status: 401 });
     }
